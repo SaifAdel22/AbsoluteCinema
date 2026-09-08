@@ -9,9 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Admin\Views\" />
     <Folder Include="Areas\User\Controllers\" />
-    <Folder Include="Areas\User\Views\" />
   </ItemGroup>
 
   <ItemGroup>
