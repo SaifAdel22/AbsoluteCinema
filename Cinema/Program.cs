@@ -1,11 +1,34 @@
+using AbsoluteCinema.Data;
+using AbsoluteCinema.Helper;
+using AbsoluteCinema.Models;
+using AbsoluteCinema.Repositories;
+using AbsoluteCinema.Repositories.IRepositories;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<ApplicationDbContext>(optionsBuilder =>
+{
+    optionsBuilder.UseSqlServer(connectionString);
+});
+
+builder.Services.AddScoped<IRepository<Cinema>, Repository<Cinema>>();
+builder.Services.AddScoped<IRepository<Actor>, Repository<Actor>>();
+builder.Services.AddScoped<IRepository<Category>, Repository<Category>>();
+builder.Services.AddScoped<IRepository<Movie>, Repository<Movie>>();
+builder.Services.AddScoped<IRepository<MovieActor>, Repository<MovieActor>>();
+builder.Services.AddScoped<IRepository<MovieSubImg>, Repository<MovieSubImg>>();
+
+builder.Services.AddScoped<IBulkRepository<MovieSubImg>, BulkRepository<MovieSubImg>>();
+
+builder.Services.AddScoped<IFileUpload, FileUpload>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -14,7 +37,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 1. تقديم الملفات الثابتة من wwwroot (يجب أن تكون في البداية قبل الـ Routing والـ Auth)
 app.UseStaticFiles(new StaticFileOptions
 {
     ServeUnknownFileTypes = true

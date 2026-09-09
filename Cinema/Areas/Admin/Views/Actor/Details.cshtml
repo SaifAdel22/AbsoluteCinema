@@ -1,0 +1,68 @@
+﻿@model AbsoluteCinema.ViewModels.ActorDetailsVM
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-white">Actor Profile: <span class="fw-bold">@Model.ActorName</span></h5>
+        <a asp-action="Index" class="btn btn-sm btn-light text-primary">Back to Actors List</a>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-3 text-center">
+                @{
+                    var actorImg = string.IsNullOrWhiteSpace(Model.ProfilePicture)
+                        ? "/assets/img/generic/placeholder.png"
+                        : (Model.ProfilePicture.StartsWith("/") || Model.ProfilePicture.StartsWith("~")
+                            ? Url.Content(Model.ProfilePicture)
+                            : Url.Content("~/images/actors/" + Model.ProfilePicture));
+                }
+                <img src="@actorImg" class="img-fluid rounded-circle border shadow-sm mb-2" style="width: 170px; height: 170px; object-fit: cover;" alt="@Model.ActorName"
+                     onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200?text=No+Photo';" />
+            </div>
+           
+        </div>
+
+        <hr />
+
+        <h6 class="mb-3 text-700">Filmography (@Model.Movies.Count Movies)</h6>
+
+        @if (!Model.Movies.Any())
+        {
+            <div class="alert alert-info border-0">No movies registered for this actor yet.</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var movie in Model.Movies)
+                {
+                    <div class="col-md-4 col-lg-3">
+                        <div class="card h-100 border overflow-hidden shadow-sm">
+                            @{
+                                var movieImg = string.IsNullOrWhiteSpace(movie.ExistingMainImg)
+                                    ? "/assets/img/generic/placeholder.png"
+                                    : (movie.ExistingMainImg.StartsWith("/") || movie.ExistingMainImg.StartsWith("~")
+                                        ? Url.Content(movie.ExistingMainImg)
+                                        : Url.Content("~/images/movies/main/" + movie.ExistingMainImg));
+                            }
+                            <div style="height: 240px; width: 100%;" class="bg-200">
+                                <img src="@movieImg" class="card-img-top w-100 h-100" style="object-fit: cover;" alt="@movie.Title"
+                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x400?text=No+Image';" />
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <h6 class="card-title fw-bold text-truncate mb-1">@movie.Title</h6>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-success">$@movie.Price</span>
+                                    </div>
+                                </div>
+                                <a asp-area="Admin" asp-controller="Movie" asp-action="Details" asp-route-id="@movie.Id" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                                    <i class="fas fa-film me-1"></i> View Movie
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+       
+    </div>
+</div>

@@ -1,0 +1,34 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model AbsoluteCinema.ViewModels.CategoryVM
+
+@{
+    ViewData["Title"] = "Edit Category";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+}
+
+<div class="card mb-3">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Edit Category</h5>
+    </div>
+    <div class="card-body">
+        <form asp-area="Admin" asp-controller="Category" asp-action="Update" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <input asp-for="Id" type="hidden" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-sm me-1">Update</button>
+            <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="btn btn-falcon-default btn-sm">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
