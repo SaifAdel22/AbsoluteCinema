@@ -16,6 +16,9 @@ namespace AbsoluteCinema.Repositories
             _context = context;
             _db = _context.Set<T>();
         }
+
+       
+
         public async Task<int> CommitAsync(CancellationToken ct = default) 
         {
             try

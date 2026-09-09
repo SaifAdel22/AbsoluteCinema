@@ -5,6 +5,7 @@ namespace AbsoluteCinema.Repositories.IRepositories
     public interface IRepository<T> where T : class
     {
         Task<bool> CreateAsync(T entity, CancellationToken ct = default);
+        //Task<bool> ADDAsync(T entity, CancellationToken ct = default);
 
         bool Update(T entity);
 

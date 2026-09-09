@@ -13,6 +13,7 @@ namespace AbsoluteCinema.ViewModels
         public bool Status { get; set; } = true; 
 
         [Required(ErrorMessage = "Movie title is required.")]
+        [Length(2, 200, ErrorMessage = "Movie title must be between 1 and 200 characters.")]
         [Display(Name = "Movie Title")]
         public string Title { get; set; } = string.Empty;
 
@@ -56,8 +57,11 @@ namespace AbsoluteCinema.ViewModels
         public List<MovieSubImgVM>? ExistingSubImages { get; set; }
         public List<ActorVM>? MovieActors { get; set; }
 
+        public List<MovieActorInputVM>? MovieActorsInput { get; set; } = new List<MovieActorInputVM>();
+
         public bool IsActive { get; set; } = true;
         public string CategoryName { get; set; } = string.Empty;
+
 
         // Select lists for dropdowns
         public IEnumerable<SelectListItem>? Categories { get; set; }

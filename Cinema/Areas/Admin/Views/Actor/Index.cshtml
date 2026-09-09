@@ -25,43 +25,40 @@
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Profile</th>
+                        <th style="width: 80px;">Profile</th>
                         <th>Name</th>
-                        <th>Movies</th>
-                        <th class="text-end">Actions</th>
+                        <th class="text-end" style="width: 250px;">Actions</th> <!-- زودنا text-end هنا عشان عنوان العمود يزبط -->
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="4" class="text-center text-muted py-4">No actors found.</td></tr>
+                        <tr><td colspan="3" class="text-center text-muted py-4">No actors found.</td></tr>
                     }
                     else
                     {
+                        <!-- بنحط الـ Token هنا مرة واحدة جوه الـ tbody أو الجدول عشان الـ AJAX يقراه -->
+                        @Html.AntiForgeryToken()
+
                         @foreach (var item in Model)
                         {
                             <tr>
                                 <td>
-                                    <img src="~/images/actors/@item.ProfilePicture" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
-                                </td>
-                                <td class="fw-bold">@item.ActorName</td>
-                                <td>
-                                    @if (item.Movies != null && item.Movies.Any())
-                                    {
-                                        foreach (var movie in item.Movies)
-                                        {
-                                            <span class="badge bg-secondary me-1">@movie.Title</span>
-                                        }
+                                    @{
+                                        var imagePath = string.IsNullOrEmpty(item.ProfilePicture) ? "/assets/img/generic/placeholder.png" :
+                                                        (item.ProfilePicture.StartsWith("images/") || item.ProfilePicture.StartsWith("/")
+                                                            ? "/" + item.ProfilePicture.TrimStart('/')
+                                                            : "/images/actors/" + item.ProfilePicture);
                                     }
-                                    else
-                                    {
-                                        <span class="text-muted small">No movies</span>
-                                    }
+                                    <img src="@imagePath" alt="@item.ActorName" class="rounded shadow-sm" style="width: 45px; height: 65px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
                                 </td>
-                                <td class="text-end">
+                                <td class="fw-bold align-middle">@item.ActorName</td>
+
+                                <!-- الزراير هنا متزوقة يمين بـ text-end -->
+                                <td class="text-end align-middle text-nowrap">
                                     <a asp-action="Details" asp-route-id="@item.ActorId" class="btn btn-sm btn-info text-white me-1">Details</a>
-                                    <a asp-action="Edit" asp-route-id="@item.ActorId" class="btn btn-sm btn-warning text-white me-1">Edit</a>
-                                    <a asp-action="Delete" asp-route-id="@item.ActorId" class="btn btn-sm btn-danger">Delete</a>
+                                    <a asp-action="Update" asp-route-id="@item.ActorId" class="btn btn-sm btn-warning text-white me-1">Edit</a>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteActor(@item.ActorId)">Delete</button>
                                 </td>
                             </tr>
                         }
@@ -91,3 +88,45 @@
         </ul>
     </nav>
 </div>
+@section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        <partial name="_ValidationScriptsPartial" />
+        function deleteActor(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Actor/Delete/' + id, // تأكد من الـ Route بتاعك صح
+                        type: 'POST',
+                        data: {
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire('Deleted!', response.message, 'success')
+                                    .then(() => {
+                                        location.reload();
+                                    });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error!', 'Something went wrong.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,99 @@
+﻿@model AbsoluteCinema.ViewModels.ActorVM
+
+@{
+    ViewData["Title"] = "Update Actor";
+}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Update Actor</h1>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Update" method="post" enctype="multipart/form-data" id="updateForm">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ExistingProfileImg" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label fw-bold"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ProfileImgFile" class="form-label fw-bold">New Profile Image (Optional)</label>
+                    <input asp-for="ProfileImgFile" type="file" id="profileImgInput" class="form-control" accept="image/*" />
+                    <span asp-validation-for="ProfileImgFile" class="text-danger"></span>
+                </div>
+
+                <!-- Image Preview with Path logic -->
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Current / Preview Image:</label>
+                    <div>
+                        @{
+                            var imagePath = string.IsNullOrEmpty(Model.ExistingProfileImg) ? "/assets/img/generic/placeholder.png" :
+                                            (Model.ExistingProfileImg.StartsWith("images/") || Model.ExistingProfileImg.StartsWith("/")
+                                                ? "/" + Model.ExistingProfileImg.TrimStart('/')
+                                                : "/images/actors/" + Model.ExistingProfileImg);
+                        }
+                        <img id="imagePreview" src="@imagePath" alt="Actor Image" class="img-thumbnail shadow-sm" style="max-height: 160px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- Toastr CSS & JS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        // تفعيل التحقق الفوري أثناء الكتابة
+        $(document).ready(function() {
+            var form = $("#updateForm");
+            if (form.length && form.data("validator")) {
+                form.data("validator").settings.onkeyup = function(element, event) {
+                    $(element).valid();
+                };
+            }
+        });
+
+        @if (TempData["success"] != null)
+            {
+                <text>
+                        toastr.options = {"positionClass": "toast-top-right", "progressBar": true, "timeOut": "3000" };
+                        toastr.success("@TempData["success"]");
+                </text>
+        }
+
+            // معاينة الصورة لحظياً
+            document.getElementById('profileImgInput').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('imagePreview');
+                        preview.src = e.target.result;
+                        preview.classList.remove('d-none');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+        // منع إرسال الفورم مرتين بشرط صحة الـ Validation أولاً
+        document.getElementById('updateForm').addEventListener('submit', function(e) {
+            if (!$(this).valid()) {
+                return;
+            }
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "Updating...";
+        });
+    </script>
+}

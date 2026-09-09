@@ -9,7 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\images\movies\sub\6861bde2-75c2-463f-b38a-3fd3a0b6650d-09-09-2026.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Areas\User\Controllers\" />
+    <Folder Include="Views\MovieVM\" />
+    <Folder Include="wwwroot\imgs\" />
   </ItemGroup>
 
   <ItemGroup>

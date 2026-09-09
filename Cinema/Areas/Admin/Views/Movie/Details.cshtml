@@ -9,7 +9,13 @@
         <!-- معلومات الفيلم الأساسية والصورة الرئيسية -->
         <div class="row align-items-center mb-4">
             <div class="col-md-4 text-center mb-3 mb-md-0">
-                <img src="~/images/movies/main/@Model.ExistingMainImg" class="img-fluid rounded shadow" style="max-height: 320px; width: 100%; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
+                @{
+                    var mainImgPath = string.IsNullOrEmpty(Model.ExistingMainImg) ? "/assets/img/generic/placeholder.png" :
+                                      (Model.ExistingMainImg.StartsWith("images/") || Model.ExistingMainImg.StartsWith("/")
+                                          ? "/" + Model.ExistingMainImg.TrimStart('/')
+                                          : "/images/movies/main/" + Model.ExistingMainImg);
+                }
+                <img src="@mainImgPath" class="img-fluid rounded shadow" style="max-height: 320px; width: 100%; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
             </div>
             <div class="col-md-8">
                 <h2 class="fw-bold text-primary">@Model.Title</h2>
@@ -25,15 +31,16 @@
         </div>
 
         <hr />
+        <!-- Cast / Actors -->
         <div class="row mt-4">
             <h5 class="text-muted mb-3"><i class="fas fa-users me-2"></i>Cast / Actors</h5>
             @if (Model.MovieActors != null && Model.MovieActors.Any())
             {
                 <div class="d-flex flex-wrap gap-2">
-                    @foreach (var actor in Model.MovieActors)
+                    @foreach (var actorVm in Model.MovieActors)
                     {
-                        <a asp-area="Admin" asp-controller="Actor" asp-action="Details" asp-route-id="@actor.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
-                            <i class="fas fa-user-circle me-1"></i> @actor.Name
+                        <a asp-controller="Actor" asp-action="Details" asp-route-id="@actorVm.Id" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm text-decoration-none">
+                            <i class="fas fa-user-circle me-1"></i> @actorVm.Name
                         </a>
                     }
                 </div>
@@ -45,8 +52,8 @@
                 </div>
             }
         </div>
-
         <hr />
+        <!-- Movie Gallery / Sub Images -->
         <div class="row mt-4">
             <h5 class="text-muted mb-3"><i class="fas fa-images me-2"></i>Movie Gallery / Sub Images</h5>
             @if (Model.ExistingSubImages != null && Model.ExistingSubImages.Any())
@@ -55,7 +62,13 @@
                 {
                     <div class="col-md-3 mb-3">
                         <div class="card shadow-sm">
-                            <img src="~/images/movies/sub/@subImg.Img" class="card-img-top rounded" style="height: 150px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
+                            @{
+                                var subImgPath = string.IsNullOrEmpty(subImg.Img) ? "/assets/img/generic/placeholder.png" :
+                                                 (subImg.Img.StartsWith("images/") || subImg.Img.StartsWith("/")
+                                                     ? "/" + subImg.Img.TrimStart('/')
+                                                     : "/images/movies/sub/" + subImg.Img);
+                            }
+                            <img src="@subImgPath" class="card-img-top rounded" style="height: 150px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
                         </div>
                     </div>
                 }
@@ -69,7 +82,7 @@
         </div>
     </div>
     <div class="card-footer text-end bg-light">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning text-white me-2">Edit Movie</a>
+        <a asp-action="Update" asp-route-id="@Model.Id" class="btn btn-warning text-white me-2">Edit Movie</a>
         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
     </div>
 </div>

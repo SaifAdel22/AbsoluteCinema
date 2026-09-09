@@ -6,9 +6,10 @@ namespace AbsoluteCinema.Helper
 
     public enum FileType
     {
-        Img = 1,
-        Pdf = 2,
-        Uploads = 3
+        Img,
+        Pdf,
+        MovieMain,
+        MovieSub
     }
 
     public interface IFileUpload

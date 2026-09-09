@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
 namespace AbsoluteCinema.ViewModels
 {
@@ -8,14 +7,11 @@ namespace AbsoluteCinema.ViewModels
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Actor name is required.")]
-        [Display(Name = "Actor Name")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters.")]
         public string Name { get; set; } = string.Empty;
 
-        public string Bio { get; set; } = string.Empty;
+        public IFormFile? ProfileImgFile { get; set; }
 
-        public string? ExistingProfilePicture { get; set; }
-
-        [Display(Name = "Profile Picture")]
-        public IFormFile? ProfilePicture { get; set; }
+        public string? ExistingProfileImg { get; set; }
     }
 }
