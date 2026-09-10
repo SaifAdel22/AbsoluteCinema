@@ -12,7 +12,6 @@ namespace AbsoluteCinema.ViewModels
         public string Name { get; set; } = string.Empty;
 
 
-        public string Address { get; set; } = string.Empty;
 
         public string? ExistingCinemaLogo { get; set; }
 

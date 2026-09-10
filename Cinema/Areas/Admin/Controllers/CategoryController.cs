@@ -150,7 +150,6 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
         {
             var category = _repository.GetOne(e => e.Id == id);

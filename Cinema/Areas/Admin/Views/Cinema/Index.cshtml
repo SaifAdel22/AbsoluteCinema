@@ -45,15 +45,23 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>
-                                    <img src="~/images/cinemas/@item.ExistingCinemaLogo" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
+                                 <td>
+                                    @{
+                                        var imagePath = string.IsNullOrEmpty(item.ExistingCinemaLogo) ? "/assets/img/generic/placeholder.png" :
+                                                        (item.ExistingCinemaLogo.StartsWith("images/") || item.ExistingCinemaLogo.StartsWith("/")
+                                                            ? "/" + item.ExistingCinemaLogo.TrimStart('/')
+                                                            : "/images/cinemas/" + item.ExistingCinemaLogo);
+                                    }
+                                    <img src="@imagePath" alt="@item.Name" class="rounded shadow-sm" style="width: 45px; height: 65px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
                                 </td>
                                 <td class="fw-bold">@item.Name</td>
                                 <td class="text-end">
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white me-1">Details</a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white me-1">Edit</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-                                </td>
+                                    <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white me-1">Edit</a>
+<!-- زرار الحذف في الجدول -->
+<button type="button" class="btn btn-danger btn-sm" onclick="deleteCinema(@item.Id)">
+    <i class="fas fa-trash"></i> Delete
+</button>                                </td>
                             </tr>
                         }
                     }
@@ -82,3 +90,59 @@
         </ul>
     </nav>
 </div>
+
+                    @section Scripts {
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        function deleteCinema(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // إرسال طلب الـ Delete عن طريق الـ AJAX
+                    $.ajax({
+                        url: '@Url.Action("Delete", "Cinema", new { area = "Admin" })',
+                        type: 'POST',
+                        data: {
+                            id: id,
+                            // لو الـ Controller محتاج الـ AntiForgeryToken مع الـ Ajax
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire(
+                                    'Deleted!',
+                                    response.message,
+                                    'success'
+                                ).then(() => {
+                                    location.reload(); // إعادة تحميل الصفحة لتحديث الجدول
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    response.message,
+                                    'error'
+                                );
+                            }
+                        },
+                        error: function () {
+                            Swal.fire(
+                                'Error!',
+                                'Something went wrong while deleting.',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

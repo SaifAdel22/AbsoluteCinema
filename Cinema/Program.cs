@@ -47,7 +47,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 2. إعداد المسارات (Routing Configuration)
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");

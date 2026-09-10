@@ -46,9 +46,9 @@
                                 <td class="fw-bold">@item.Name</td>
                                 <td class="text-end">
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white me-1">Details</a>
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white me-1">Edit</a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-                                </td>
+                                    <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white me-1">Edit</a>
+<!-- زرار الحذف الجديد -->
+<button type="button" class="btn btn-sm btn-danger" onclick="deleteCategory(@item.Id)">Delete</button>                         </td>
                             </tr>
                         }
                     }
@@ -79,3 +79,46 @@
         </ul>
     </nav>
 </div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // غيرنا اسم الدالة هنا لـ deleteCategory عشان تطابق الزرار
+        function deleteCategory(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Category/Delete/' + id, // عدلنا الرابط كمان عشان يروح للـ Category مش الـ Cinema
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            // الكنترولر بتاعك بيرجع Redirect فـ أول ما ينجح هنعمل ريلود للصفحة
+                            Swal.fire(
+                                'Deleted!',
+                                'Category deleted successfully!',
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            Swal.fire(
+                                'Error!',
+                                'Something went wrong while deleting. Details: ' + error,
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

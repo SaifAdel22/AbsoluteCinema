@@ -58,8 +58,8 @@
                                 <td class="text-end align-middle text-nowrap">
                                     <a asp-action="Details" asp-route-id="@item.ActorId" class="btn btn-sm btn-info text-white me-1">Details</a>
                                     <a asp-action="Update" asp-route-id="@item.ActorId" class="btn btn-sm btn-warning text-white me-1">Edit</a>
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteActor(@item.ActorId)">Delete</button>
-                                </td>
+                                    <button type="button" class="btn btn-sm btn-danger text-white me-1" onclick="deleteActor(@item.ActorId)">Delete</button>
+</td>
                             </tr>
                         }
                     }
@@ -93,7 +93,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        <partial name="_ValidationScriptsPartial" />
         function deleteActor(id) {
             Swal.fire({
                 title: 'Are you sure?',
@@ -106,7 +105,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/Admin/Actor/Delete/' + id, // تأكد من الـ Route بتاعك صح
+                        url: '/Admin/Actor/Delete/' + id,
                         type: 'POST',
                         data: {
                             __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()

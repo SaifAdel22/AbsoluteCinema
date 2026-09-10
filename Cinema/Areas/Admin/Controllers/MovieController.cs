@@ -1,4 +1,4 @@
-﻿using AbsoluteCinema.Data; // تأكد من استدعاء الـ Data namespace بتاعتك عشان الـ ApplicationDbContext
+﻿using AbsoluteCinema.Data; 
 using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories.IRepositories;
 using AbsoluteCinema.ViewModels;
@@ -13,11 +13,10 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
     [Area("Admin")]
     public class MovieController : Controller
     {
-        private readonly ApplicationDbContext _context; // استخدام الـ DbContext مباشرة للربط الحقيقي
-        public IRepository<Movie> _repository;
+        private readonly ApplicationDbContext _context; 
         public IRepository<Category> _categoryRepository;
         public IRepository<Cinema> _cinemaRepository;
-        public IRepository<MovieSubImg> _subImgRepository;
+        public IBulkRepository<MovieSubImg> _subImgRepository;
         public IRepository<Actor> _ActorRepository;
         private readonly IFileUpload _fileUpload;
 
@@ -26,7 +25,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             IRepository<Movie> repository,
             IRepository<Category> categoryRepository,
             IRepository<Cinema> cinemaRepository,
-            IRepository<MovieSubImg> subImgRepository,
+            IBulkRepository<MovieSubImg> subImgRepository,
             IRepository<Actor> ActorRepository,
             IFileUpload fileUpload)
         {
@@ -40,13 +39,19 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index(string searchTitle)
+        public IActionResult Index(string searchTitle, int pageNumber = 1)
         {
-            var movies = _repository.Get(
+            int pageSize = 5;
+
+            var query = _repository.Get(
                 expression: string.IsNullOrEmpty(searchTitle) ? null : m => m.Name.Contains(searchTitle),
                 includes: new Expression<Func<Movie, object>>[] { m => m.Category },
                 tracked: false
-            );
+            ).AsQueryable();
+
+            int totalItems = query.Count();
+
+            var movies = query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
             var moviesVM = movies.Select(m => new MovieVM
             {
@@ -58,10 +63,13 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 CategoryName = m.Category.Name ?? string.Empty
             }).ToList();
 
+            ViewBag.CurrentPage = pageNumber;
+            ViewBag.TotalPages = (int)Math.Ceiling(decimal.Divide(totalItems, pageSize));
+            ViewBag.SearchTitle = searchTitle;
+
             return View(moviesVM);
         }
 
-        [HttpGet]
         [HttpGet]
         public IActionResult Details(int id)
         {
@@ -154,11 +162,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 Status = model.Status
             };
 
-            // 1. إضافة الفيلم للـ DbContext الموحد
             await _context.Movies.AddAsync(movie);
-            await _context.SaveChangesAsync(); // بيحفظ الفيلم ويدينا الـ ID فوراً
+            await _context.SaveChangesAsync(); 
 
-            // 2. حفظ الصور الفرعية إن وجدت تحت نفس الـ Context
             if (model.NewSubImages != null && model.NewSubImages.Any())
             {
                 foreach (var subImg in model.NewSubImages)
@@ -175,7 +181,6 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 }
             }
 
-            // 3. حفظ الممثلين المختارين تحت نفس الـ Context (مستحيل تضيع هنا)
             if (model.SelectedActorIds != null && model.SelectedActorIds.Any())
             {
                 foreach (var actorId in model.SelectedActorIds)
@@ -189,8 +194,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 }
             }
 
-            // الحفظ النهائي لكل العلاقات (صور وممثلين) دفعة واحدة
             await _context.SaveChangesAsync();
+            TempData["success"] = "Movie Added successfully!";
+
 
             return RedirectToAction(nameof(Index));
         }
@@ -200,7 +206,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         {
             var movie = _context.Movies
                 .Include(m => m.MovieActors)
-                .Include(m => m.SubImgs) // <-- تأكد من وجود هذه الـ Include
+                .Include(m => m.SubImgs) 
                 .FirstOrDefault(m => m.Id == id);
 
             if (movie == null) return NotFound();
@@ -220,7 +226,6 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 ExistingMainImg = movie.MainImg,
                 SelectedActorIds = selectedActorIds,
 
-                // **هذا السطر هو الناقص والذي سيقوم بعرض الصور الفرعية الحالية:**
                 ExistingSubImages = movie.SubImgs.Select(si => new MovieSubImgVM
                 {
                     Id = si.Id,
@@ -264,7 +269,6 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             movie.Status = model.Status;
             movie.MainImg = updatedMainImg ?? movie.MainImg;
 
-            // مسح الممثلين القدامى وإضافة الجداد في نفس السياق
             _context.MovieActors.RemoveRange(movie.MovieActors);
 
             if (model.SelectedActorIds != null && model.SelectedActorIds.Any())
@@ -293,6 +297,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["success"] = "Movie Updated successfully!";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -317,6 +323,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             var subImages = _subImgRepository.Get(si => si.MovieId == id).ToList();
             if (subImages.Any())
             {
+
                 foreach (var subImg in subImages)
                 {
                     if (!string.IsNullOrEmpty(subImg.Img))
@@ -327,6 +334,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                         _fileUpload.DeleteFileLocally(subPath);
                     }
                 }
+                _subImgRepository.DeleteRange(subImages);
+
 
                 if (_subImgRepository is IBulkRepository<MovieSubImg> bulkSubImgRepo)
                 {

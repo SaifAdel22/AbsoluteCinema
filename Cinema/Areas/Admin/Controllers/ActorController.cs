@@ -156,11 +156,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.ExistingProfileImg = actor.Img; // الاحتفاظ بالصورة القديمة لعدم فقدانها عند الخطأ
-                return View(model);
+                model.ExistingProfileImg = actor.Img; 
             }
 
-            // استخدام FileType.Img لتحديث الصورة
             string? updatedImg = _fileUpload.UpdateFile(model.ProfileImgFile, actor.Img, FileType.Img);
 
             actor.Name = model.Name;
@@ -173,7 +171,6 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // 5. Delete (Ajax for SweetAlert2)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)

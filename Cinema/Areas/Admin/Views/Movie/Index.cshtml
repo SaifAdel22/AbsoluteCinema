@@ -1,117 +1,124 @@
 ﻿@model IEnumerable<AbsoluteCinema.ViewModels.MovieVM>
 
 <div class="container-fluid py-4">
-    <div class="card shadow-sm border-0 rounded-3 p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold mb-0 text-primary">Movies Management</h2>
-            <a asp-action="Create" class="btn btn-primary btn-sm">
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+
+        <!-- Header الأزرق زي باقي الصفحات -->
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0 text-white fw-bold">Movies Management</h5>
+            <a asp-action="Create" class="btn btn-light btn-sm text-primary fw-bold">
                 <i class="fas fa-plus me-1"></i> Add New Movie
             </a>
         </div>
 
-        <!-- شريط البحث -->
-        <form asp-action="Index" method="get" class="mb-4">
-            <div class="input-group" style="max-width: 400px;">
-                <input type="text" name="searchTitle" class="form-control" placeholder="Search movie by title..." />
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Search
-                </button>
-            </div>
-        </form>
+        <div class="card-body p-4">
+            <!-- شريط البحث -->
+            <form asp-action="Index" method="get" class="mb-4">
+                <div class="input-group" style="max-width: 400px;">
+                    <input type="text" name="searchTitle" value="@ViewBag.SearchTitle" class="form-control" placeholder="Search movie by title..." />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
 
-        <!-- جدول عرض الأفلام -->
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="py-3">Poster</th>
-                        <th class="py-3">Title</th>
-                        <th class="py-3">Price</th>
-                        <th class="py-3">Category</th>
-                        <th class="py-3">Status</th>
-                        <th class="py-3 text-end" style="min-width: 180px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var movie in Model)
-                    {
+            <!-- جدول عرض الأفلام -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <!-- Poster (يدعم القديم والجديد بذكاء) -->
-                            <td>
-                                @{
-                                    // لو المسار القديم يبدأ بـ http أو / أو images مكتوبة كاملة، يقرأه كما هو. لو اسم جديد يحط له المسار.
-                                    var imagePath = string.IsNullOrEmpty(movie.ExistingMainImg) ? "/assets/img/generic/placeholder.png" :
-                                                    (movie.ExistingMainImg.StartsWith("images/") || movie.ExistingMainImg.StartsWith("/")
-                                                        ? "/" + movie.ExistingMainImg.TrimStart('/')
-                                                        : "/images/movies/main/" + movie.ExistingMainImg);
-                                }
-                                <img src="@imagePath" alt="@movie.Title" class="rounded shadow-sm" style="width: 45px; height: 65px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
-                            </td>
-                            <!-- Title -->
-                            <td class="fw-bold text-dark">@movie.Title</td>
-                            <!-- Price -->
-                            <td>$@movie.Price</td>
-                            <!-- Category Name -->
-                            <td>
-                                <span class="badge bg-info bg-opacity-10 text-info fw-bold px-2 py-1">
-                                    @movie.CategoryName
-                                </span>
-                            </td>
-                            <!-- Status -->
-                            <td>
-                                <form asp-action="ToggleStatus" asp-route-id="@movie.Id" method="post" class="d-inline">
-                                    @if (movie.Status)
-                                    {
-                                        <button type="submit" class="badge bg-success border-0 text-white fw-bold px-3 py-2 shadow-sm" style="cursor: pointer;" title="Click to make Inactive">
-                                            Active
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <button type="submit" class="badge bg-secondary border-0 text-white fw-bold px-3 py-2 shadow-sm" style="cursor: pointer;" title="Click to make Active">
-                                            Inactive
-                                        </button>
-                                    }
-                                </form>
-                            </td>
-                            <!-- Actions -->
-                            <td class="text-end">
-                                <div class="btn-group" role="group">
-                                    <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-outline-info btn-sm px-2 py-1" title="Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a asp-action="Update" asp-route-id="@movie.Id" class="btn btn-outline-warning btn-sm px-2 py-1 ms-1" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1 ms-1" title="Delete" onclick="confirmDelete(@movie.Id)">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th class="py-3">Poster</th>
+                            <th class="py-3">Title</th>
+                            <th class="py-3">Price</th>
+                            <th class="py-3">Category</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3 text-end" style="min-width: 200px;">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination Footer -->
-        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-            <div class="text-muted fs--1">
-                Showing data results securely
+                    </thead>
+                    <tbody>
+                        @foreach (var movie in Model)
+                        {
+                            <tr>
+                                <!-- Poster -->
+                                <td>
+                                    @{
+                                        var imagePath = string.IsNullOrEmpty(movie.ExistingMainImg) ? "/assets/img/generic/placeholder.png" :
+                                                        (movie.ExistingMainImg.StartsWith("images/") || movie.ExistingMainImg.StartsWith("/")
+                                                            ? "/" + movie.ExistingMainImg.TrimStart('/')
+                                                            : "/images/movies/main/" + movie.ExistingMainImg);
+                                    }
+                                    <img src="@imagePath" alt="@movie.Title" class="rounded shadow-sm" style="width: 45px; height: 65px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
+                                </td>
+                                <!-- Title -->
+                                <td class="fw-bold text-dark">@movie.Title</td>
+                                <!-- Price -->
+                                <td>$@movie.Price</td>
+                                <!-- Category Name -->
+                                <td>
+                                    <span class="badge bg-info bg-opacity-10 text-info fw-bold px-2 py-1">
+                                        @movie.CategoryName
+                                    </span>
+                                </td>
+                                <!-- Status -->
+                                <td>
+                                    <form asp-action="ToggleStatus" asp-route-id="@movie.Id" method="post" class="d-inline">
+                                        @if (movie.Status)
+                                        {
+                                            <button type="submit" class="badge bg-success border-0 text-white fw-bold px-3 py-2 shadow-sm" style="cursor: pointer;" title="Click to make Inactive">
+                                                Active
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="badge bg-secondary border-0 text-white fw-bold px-3 py-2 shadow-sm" style="cursor: pointer;" title="Click to make Active">
+                                                Inactive
+                                            </button>
+                                        }
+                                    </form>
+                                </td>
+                                <!-- Actions (أزرار ملونة زى باقي الصفحات) -->
+                                <td class="text-end">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-info btn-sm text-white px-2 py-1">Details</a>
+                                        <a asp-action="Update" asp-route-id="@movie.Id" class="btn btn-warning btn-sm text-white px-2 py-1 ms-1">Edit</a>
+                                        <button type="button" class="btn btn-danger btn-sm px-2 py-1 ms-1" onclick="confirmDelete(@movie.Id)">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-            <nav aria-label="Page navigation">
-                <ul class="pagination pagination-sm mb-0">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Previous</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Next</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
 
+            <!-- Pagination Footer -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                <div class="text-muted">
+                    Page @ViewBag.CurrentPage of @(ViewBag.TotalPages == 0 ? 1 : ViewBag.TotalPages)
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination pagination-sm mb-0">
+                        <!-- Previous Button -->
+                        <li class="page-item @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage - 1, searchTitle = ViewBag.SearchTitle })">Previous</a>
+                        </li>
+
+                        <!-- Dynamic Page Numbers -->
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { pageNumber = i, searchTitle = ViewBag.SearchTitle })">@i</a>
+                            </li>
+                        }
+
+                        <!-- Next Button -->
+                        <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { pageNumber = ViewBag.CurrentPage + 1, searchTitle = ViewBag.SearchTitle })">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
     </div>
 </div>
 
