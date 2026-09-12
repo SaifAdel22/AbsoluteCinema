@@ -1,7 +1,7 @@
-﻿using AbsoluteCinema.Controllers;
-using AbsoluteCinema.Data;
+﻿using AbsoluteCinema.Data;
 using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories.IRepositories;
+using AbsoluteCinema.Repositories.UnitOfWork;
 using AbsoluteCinema.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,18 +11,17 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
     [Area("Admin")]
     public class CategoryController : Controller
     {
-        private readonly IRepository<Category> _repository;
-        private readonly IRepository<Movie> _movieRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryController(IRepository<Category> repository, IRepository<Movie> MovieRepository)
+        public CategoryController(IUnitOfWork unitOfWork)
         {
-            _repository = repository;
-            _movieRepository = MovieRepository;
+            _unitOfWork = unitOfWork;
         }
+
         [HttpGet]
         public IActionResult Details(int id)
         {
-            var category = _repository.GetOne(c => c.Id == id);
+            var category = _unitOfWork.categoryRepository.GetOne(c => c.Id == id);
 
             if (category is null)
             {
@@ -34,14 +33,14 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             {
                 CategoryId = category.Id,
                 CategoryName = category.Name,
-                Movies = _movieRepository.Get(m => m.CategoryId == id).Select(m => new MovieVM
+                Movies = _unitOfWork.movieRepository.Get(m => m.CategoryId == id).Select(m => new MovieVM
                 {
                     Id = m.Id,
-                    Title = m.Name,            
+                    Title = m.Name,
                     Description = m.Description,
                     Price = m.Price,
-                    StartDate = m.DateTime,    
-                    ExistingMainImg = m.MainImg 
+                    StartDate = m.DateTime,
+                    ExistingMainImg = m.MainImg
                 }).ToList()
             };
 
@@ -52,7 +51,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         public IActionResult Index(string? query, int pageNumber = 1)
         {
             int pageSize = 5;
-            var categories = _repository.Get();
+            var categories = _unitOfWork.categoryRepository.Get();
 
             if (!string.IsNullOrEmpty(query))
             {
@@ -94,8 +93,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 Name = categoryVM.Name
             };
 
-            await _repository.CreateAsync(category, ct);
-            await _repository.CommitAsync(ct);
+            await _unitOfWork.categoryRepository.CreateAsync(category, ct);
+            await _unitOfWork.categoryRepository.CommitAsync(ct);
 
             TempData["success"] = "Category created successfully!";
             return RedirectToAction(nameof(Index));
@@ -104,7 +103,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Update(int id)
         {
-            var category = _repository.GetOne(e => e.Id == id, tracked: false);
+            var category = _unitOfWork.categoryRepository.GetOne(e => e.Id == id, tracked: false);
 
             if (category is null)
             {
@@ -128,7 +127,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             if (!ModelState.IsValid)
                 return View(categoryVM);
 
-            var categoryInDB = _repository.GetOne(e => e.Id == categoryVM.Id, tracked: false);
+            var categoryInDB = _unitOfWork.categoryRepository.GetOne(e => e.Id == categoryVM.Id, tracked: false);
 
             if (categoryInDB is null)
             {
@@ -142,8 +141,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 Name = categoryVM.Name
             };
 
-            _repository.Update(category);
-            await _repository.CommitAsync(ct);
+            _unitOfWork.categoryRepository.Update(category);
+            await _unitOfWork.categoryRepository.CommitAsync(ct);
 
             TempData["success"] = "Category updated successfully!";
             return RedirectToAction(nameof(Index));
@@ -152,7 +151,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
         {
-            var category = _repository.GetOne(e => e.Id == id);
+            var category = _unitOfWork.categoryRepository.GetOne(e => e.Id == id);
 
             if (category is null)
             {
@@ -160,8 +159,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            _repository.Delete(category);
-            await _repository.CommitAsync(ct);
+            _unitOfWork.categoryRepository.Delete(category);
+            await _unitOfWork.categoryRepository.CommitAsync(ct);
 
             TempData["success"] = "Category deleted successfully!";
             return RedirectToAction(nameof(Index));

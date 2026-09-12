@@ -1,5 +1,4 @@
-﻿using AbsoluteCinema.Data; 
-using AbsoluteCinema.Models;
+﻿using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories.IRepositories;
 using AbsoluteCinema.ViewModels;
 using AbsoluteCinema.Helper;
@@ -7,34 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using AbsoluteCinema.Repositories.UnitOfWork;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class MovieController : Controller
     {
-        private readonly ApplicationDbContext _context; 
-        public IRepository<Category> _categoryRepository;
-        public IRepository<Cinema> _cinemaRepository;
-        public IBulkRepository<MovieSubImg> _subImgRepository;
-        public IRepository<Actor> _ActorRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IFileUpload _fileUpload;
 
-        public MovieController(
-            ApplicationDbContext context,
-            IRepository<Movie> repository,
-            IRepository<Category> categoryRepository,
-            IRepository<Cinema> cinemaRepository,
-            IBulkRepository<MovieSubImg> subImgRepository,
-            IRepository<Actor> ActorRepository,
-            IFileUpload fileUpload)
+        public MovieController(IUnitOfWork unitOfWork, IFileUpload fileUpload)
         {
-            _context = context;
-            _repository = repository;
-            _categoryRepository = categoryRepository;
-            _cinemaRepository = cinemaRepository;
-            _subImgRepository = subImgRepository;
-            _ActorRepository = ActorRepository;
+            _unitOfWork = unitOfWork;
             _fileUpload = fileUpload;
         }
 
@@ -43,7 +27,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         {
             int pageSize = 5;
 
-            var query = _repository.Get(
+            var query = _unitOfWork.movieRepository.Get(
                 expression: string.IsNullOrEmpty(searchTitle) ? null : m => m.Name.Contains(searchTitle),
                 includes: new Expression<Func<Movie, object>>[] { m => m.Category },
                 tracked: false
@@ -73,7 +57,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            var movie = _context.Movies
+            var movie = _unitOfWork.movieRepository.Get()
                 .Include(m => m.Category)
                 .Include(m => m.Cinema)
                 .Include(m => m.SubImgs)
@@ -109,17 +93,16 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return View(movieVM);
         }
 
-           
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleStatus(int id)
         {
-            var movie = _repository.GetOne(expression: i => i.Id == id);
+            var movie = _unitOfWork.movieRepository.GetOne(expression: i => i.Id == id);
             if (movie != null)
             {
                 movie.Status = !movie.Status;
-                _repository.Update(movie);
-                await _repository.CommitAsync();
+                _unitOfWork.movieRepository.Update(movie);
+                await _unitOfWork.movieRepository.CommitAsync();
             }
             return RedirectToAction(nameof(Index));
         }
@@ -129,9 +112,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         {
             var model = new MovieVM
             {
-                Categories = _categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
-                Cinemas = _cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
-                Actors = _ActorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
+                Categories = _unitOfWork.categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
+                Cinemas = _unitOfWork.cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
+                Actors = _unitOfWork.actorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
             };
             return View(model);
         }
@@ -142,9 +125,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
-                model.Categories = _categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
-                model.Cinemas = _cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
-                model.Actors = _ActorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name });
+                model.Categories = _unitOfWork.categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
+                model.Cinemas = _unitOfWork.cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
+                model.Actors = _unitOfWork.actorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name });
                 return View(model);
             }
 
@@ -162,8 +145,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 Status = model.Status
             };
 
-            await _context.Movies.AddAsync(movie);
-            await _context.SaveChangesAsync(); 
+            await _unitOfWork.movieRepository.CreateAsync(movie);
+            await _unitOfWork.movieRepository.CommitAsync();
 
             if (model.NewSubImages != null && model.NewSubImages.Any())
             {
@@ -172,7 +155,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                     string? subImgPath = _fileUpload.SaveFile(subImg, FileType.MovieSub);
                     if (!string.IsNullOrEmpty(subImgPath))
                     {
-                        await _context.MovieSubImgs.AddAsync(new MovieSubImg
+                        await _unitOfWork.subimgRepository.CreateAsync(new MovieSubImg
                         {
                             MovieId = movie.Id,
                             Img = subImgPath
@@ -185,7 +168,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             {
                 foreach (var actorId in model.SelectedActorIds)
                 {
-                    await _context.MovieActors.AddAsync(new MovieActor
+                    await _unitOfWork.movieactorRepository.CreateAsync(new MovieActor
                     {
                         MovieId = movie.Id,
                         ActorId = actorId,
@@ -194,9 +177,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.movieRepository.CommitAsync();
             TempData["success"] = "Movie Added successfully!";
-
 
             return RedirectToAction(nameof(Index));
         }
@@ -204,9 +186,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Update(int id)
         {
-            var movie = _context.Movies
+            var movie = _unitOfWork.movieRepository.Get()
                 .Include(m => m.MovieActors)
-                .Include(m => m.SubImgs) 
+                .Include(m => m.SubImgs)
                 .FirstOrDefault(m => m.Id == id);
 
             if (movie == null) return NotFound();
@@ -232,18 +214,19 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                     Img = si.Img
                 }).ToList(),
 
-                Categories = _categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
-                Cinemas = _cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
-                Actors = _ActorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
+                Categories = _unitOfWork.categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
+                Cinemas = _unitOfWork.cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }),
+                Actors = _unitOfWork.actorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name })
             };
 
             return View(model);
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(int id, MovieVM model)
         {
-            var movie = _context.Movies
+            var movie = _unitOfWork.movieRepository.Get()
                 .Include(m => m.MovieActors)
                 .Include(m => m.SubImgs)
                 .FirstOrDefault(m => m.Id == id);
@@ -252,9 +235,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
             if (!ModelState.IsValid)
             {
-                model.Categories = _categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
-                model.Cinemas = _cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
-                model.Actors = _ActorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name });
+                model.Categories = _unitOfWork.categoryRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
+                model.Cinemas = _unitOfWork.cinemaRepository.Get().Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name });
+                model.Actors = _unitOfWork.actorRepository.Get().Select(a => new SelectListItem { Value = a.Id.ToString(), Text = a.Name });
                 return View(model);
             }
 
@@ -269,13 +252,13 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             movie.Status = model.Status;
             movie.MainImg = updatedMainImg ?? movie.MainImg;
 
-            _context.MovieActors.RemoveRange(movie.MovieActors);
+            _unitOfWork.movieactorRepository.DeleteRange(movie.MovieActors);
 
             if (model.SelectedActorIds != null && model.SelectedActorIds.Any())
             {
                 foreach (var actorId in model.SelectedActorIds)
                 {
-                    await _context.MovieActors.AddAsync(new MovieActor
+                    await _unitOfWork.movieactorRepository.CreateAsync(new MovieActor
                     {
                         MovieId = id,
                         ActorId = actorId,
@@ -291,12 +274,12 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                     string? subImgPath = _fileUpload.SaveFile(subImg, FileType.MovieSub);
                     if (!string.IsNullOrEmpty(subImgPath))
                     {
-                        await _context.MovieSubImgs.AddAsync(new MovieSubImg { MovieId = id, Img = subImgPath });
+                        await _unitOfWork.subimgRepository.CreateAsync(new MovieSubImg { MovieId = id, Img = subImgPath });
                     }
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.movieRepository.CommitAsync();
             TempData["success"] = "Movie Updated successfully!";
 
             return RedirectToAction(nameof(Index));
@@ -305,7 +288,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpGet, HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var movie = _repository.GetOne(expression: m => m.Id == id);
+            var movie = _unitOfWork.movieRepository.GetOne(expression: m => m.Id == id);
             if (movie == null)
             {
                 TempData["error"] = "Movie not found!";
@@ -320,10 +303,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 _fileUpload.DeleteFileLocally(fullPath);
             }
 
-            var subImages = _subImgRepository.Get(si => si.MovieId == id).ToList();
+            var subImages = _unitOfWork.subimgRepository.Get(si => si.MovieId == id).ToList();
             if (subImages.Any())
             {
-
                 foreach (var subImg in subImages)
                 {
                     if (!string.IsNullOrEmpty(subImg.Img))
@@ -334,26 +316,24 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                         _fileUpload.DeleteFileLocally(subPath);
                     }
                 }
-                _subImgRepository.DeleteRange(subImages);
 
-
-                if (_subImgRepository is IBulkRepository<MovieSubImg> bulkSubImgRepo)
+                if (_unitOfWork.subimgRepository is IBulkRepository<MovieSubImg> bulkSubImgRepo)
                 {
                     bulkSubImgRepo.DeleteRange(subImages);
                 }
             }
 
-            _repository.Delete(movie);
-            await _repository.CommitAsync();
+            _unitOfWork.movieRepository.Delete(movie);
+            await _unitOfWork.movieRepository.CommitAsync();
 
             TempData["success"] = "Movie deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost,HttpGet]
+        [HttpPost, HttpGet]
         public async Task<IActionResult> DeleteSubImage(int id, int movieId)
         {
-            var subImg = _subImgRepository.GetOne(s => s.Id == id);
+            var subImg = _unitOfWork.subimgRepository.GetOne(s => s.Id == id);
             if (subImg != null)
             {
                 if (!string.IsNullOrEmpty(subImg.Img))
@@ -363,8 +343,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                     _fileUpload.DeleteFileLocally(fullPath);
                 }
 
-                _subImgRepository.Delete(subImg);
-                await _subImgRepository.CommitAsync();
+                _unitOfWork.subimgRepository.Delete(subImg);
+                await _unitOfWork.subimgRepository.CommitAsync();
 
                 TempData["success"] = "Sub image deleted successfully!";
             }

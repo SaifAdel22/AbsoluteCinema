@@ -1,24 +1,21 @@
 ﻿using AbsoluteCinema.Helper;
 using AbsoluteCinema.Models;
-using AbsoluteCinema.Repositories;
 using AbsoluteCinema.Repositories.IRepositories;
+using AbsoluteCinema.Repositories.UnitOfWork;
 using AbsoluteCinema.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Http.Headers;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class CinemaController : Controller
     {
-        public IRepository<Cinema> _repository;
-        public IRepository<Movie> _movierepository;
-        public IFileUpload _fileUpload;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IFileUpload _fileUpload;
 
-        public CinemaController(IRepository<Cinema> repository, IRepository<Movie> movierepository, IFileUpload fileUpload)
+        public CinemaController(IUnitOfWork unitOfWork, IFileUpload fileUpload)
         {
-            _repository = repository;
-            _movierepository = movierepository;
+            _unitOfWork = unitOfWork;
             _fileUpload = fileUpload;
         }
 
@@ -26,7 +23,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         public IActionResult Index(string? query, int pageNumber = 1)
         {
             int pageSize = 5;
-            var cinemas = _repository.Get();
+            var cinemas = _unitOfWork.cinemaRepository.Get();
 
             if (!string.IsNullOrEmpty(query))
             {
@@ -52,8 +49,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
         public IActionResult Details(int id)
         {
-            var cinema = _repository.GetOne(c => c.Id == id);
-            var cinemamovies = _movierepository.Get(expression: m => m.CinemaId == id).Select(m => new MovieVM
+            var cinema = _unitOfWork.cinemaRepository.GetOne(c => c.Id == id);
+            var cinemamovies = _unitOfWork.movieRepository.Get(expression: m => m.CinemaId == id).Select(m => new MovieVM
             {
                 Id = m.Id,
                 Title = m.Name,
@@ -101,7 +98,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 return View(cinemaVM);
             }
 
-            if (_repository.GetOne(c => c.Name.ToLower() == cinemaVM.Name.ToLower()) != null)
+            if (_unitOfWork.cinemaRepository.GetOne(c => c.Name.ToLower() == cinemaVM.Name.ToLower()) != null)
             {
                 ModelState.AddModelError("Name", "Cinema name already exists.");
                 return View(cinemaVM);
@@ -119,17 +116,17 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 Img = logoPath ?? string.Empty
             };
 
-            await _repository.CreateAsync(cinema);
-            await _repository.CommitAsync();
+            await _unitOfWork.cinemaRepository.CreateAsync(cinema);
+            await _unitOfWork.cinemaRepository.CommitAsync();
 
             TempData["success"] = "Cinema created successfully!";
             return RedirectToAction(nameof(Index));
         }
-        [HttpGet]
 
+        [HttpGet]
         public IActionResult Update(int id)
         {
-            var cinema = _repository.GetOne(c => c.Id == id);
+            var cinema = _unitOfWork.cinemaRepository.GetOne(c => c.Id == id);
             if (cinema == null)
             {
                 return NotFound();
@@ -146,7 +143,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Update(int id, CinemaVM cinemaVM)
         {
-            var cinema = _repository.GetOne(c => c.Id == id);
+            var cinema = _unitOfWork.cinemaRepository.GetOne(c => c.Id == id);
             if (cinema == null)
             {
                 return NotFound();
@@ -162,7 +159,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 cinemaVM.ExistingCinemaLogo = cinema.Img;
                 return View(cinemaVM);
             }
-            if (_repository.GetOne(c => c.Name.ToLower() == cinemaVM.Name.ToLower() && c.Id != id) != null)
+            if (_unitOfWork.cinemaRepository.GetOne(c => c.Name.ToLower() == cinemaVM.Name.ToLower() && c.Id != id) != null)
             {
                 ModelState.AddModelError("Name", "Cinema name already exists.");
                 cinemaVM.ExistingCinemaLogo = cinema.Img;
@@ -175,8 +172,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             }
             cinema.Name = cinemaVM.Name;
             cinema.Img = logoPath ?? string.Empty;
-             _repository.Update(cinema);
-            await _repository.CommitAsync();
+            _unitOfWork.cinemaRepository.Update(cinema);
+            await _unitOfWork.cinemaRepository.CommitAsync();
             TempData["success"] = "Cinema updated successfully!";
             return RedirectToAction(nameof(Index));
         }
@@ -184,7 +181,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var cinema = _repository.GetOne(c => c.Id == id);
+            var cinema = _unitOfWork.cinemaRepository.GetOne(c => c.Id == id);
             if (cinema == null)
             {
                 return Json(new { success = false, message = "Cinema not found!" });
@@ -196,8 +193,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 _fileUpload.DeleteFileLocally(fullPath);
             }
 
-            _repository.Delete(cinema);
-            await _repository.CommitAsync();
+            _unitOfWork.cinemaRepository.Delete(cinema);
+            await _unitOfWork.cinemaRepository.CommitAsync();
 
             return Json(new { success = true, message = "Cinema deleted successfully!" });
         }

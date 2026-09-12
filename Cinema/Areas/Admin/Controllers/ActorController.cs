@@ -4,21 +4,25 @@ using AbsoluteCinema.ViewModels;
 using AbsoluteCinema.Helper;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
+using AbsoluteCinema.Repositories.UnitOfWork;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class ActorController : Controller
     {
-        private readonly IRepository<Actor> _repository;
-        private readonly IRepository<Movie> _movieRepository;
+       /* private readonly IRepository<Actor> __UnitOfWork.actorRepository;
+        private readonly IRepository<Movie> _movieRepository;*/
         private readonly IFileUpload _fileUpload;
 
-        public ActorController(IRepository<Actor> repository, IRepository<Movie> movieRepository, IFileUpload fileUpload)
+        IUnitOfWork _UnitOfWork;
+
+        public ActorController(IRepository<Actor> repository, IRepository<Movie> movieRepository, IFileUpload fileUpload,IUnitOfWork unitOfWork)
         {
-            _repository = repository;
-            _movieRepository = movieRepository;
+            /*repository = repository;
+            _movieRepository = movieRepository;*/
             _fileUpload = fileUpload;
+            _UnitOfWork = unitOfWork;
         }
 
         // 1. Index
@@ -26,7 +30,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         public IActionResult Index(string? query, int pageNumber = 1)
         {
             int pageSize = 5;
-            var actors = _repository.Get(
+            var actors = _UnitOfWork.actorRepository.Get(
                 includes: new Expression<Func<Actor, object>>[]
                 {
                     a => a.MovieActors
@@ -67,7 +71,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            var actor = _repository.GetOne(
+            var actor = _UnitOfWork.actorRepository.GetOne(
                 expression: c => c.Id == id,
                 includes: new Expression<Func<Actor, object>>[]
                 {
@@ -77,7 +81,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
             if (actor == null) return NotFound();
 
-            var actorMovies = _movieRepository.Get()
+            var actorMovies = _UnitOfWork.movieRepository.Get()
                 .Where(m => m.MovieActors.Any(ma => ma.ActorId == id))
                 .Select(m => new MovieVM
                 {
@@ -122,8 +126,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 Img = imgPath ?? string.Empty
             };
 
-            await _repository.CreateAsync(actor);
-            await _repository.CommitAsync();
+            await _UnitOfWork.actorRepository.CreateAsync(actor);
+            await _UnitOfWork.actorRepository.CommitAsync();
 
             TempData["success"] = "Actor created successfully!";
             return RedirectToAction(nameof(Index));
@@ -133,7 +137,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Update(int id)
         {
-            var actor = _repository.GetOne(expression: a => a.Id == id);
+            var actor = _UnitOfWork.actorRepository.GetOne(expression: a => a.Id == id);
             if (actor == null) return NotFound();
 
             var model = new ActorVM
@@ -151,7 +155,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(int id, ActorVM model)
         {
-            var actor = _repository.GetOne(expression: a => a.Id == id);
+            var actor = _UnitOfWork.actorRepository.GetOne(expression: a => a.Id == id);
             if (actor == null) return NotFound();
 
             if (!ModelState.IsValid)
@@ -164,8 +168,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             actor.Name = model.Name;
             actor.Img = updatedImg ?? actor.Img;
 
-            _repository.Update(actor);
-            await _repository.CommitAsync();
+            _UnitOfWork.actorRepository.Update(actor);
+            await _UnitOfWork.actorRepository.CommitAsync();
 
             TempData["success"] = "Actor updated successfully!";
             return RedirectToAction(nameof(Index));
@@ -175,7 +179,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var actor =  _repository.Get().FirstOrDefault(i=>i.Id==id);
+            var actor =  _UnitOfWork.actorRepository.Get().FirstOrDefault(i=>i.Id==id);
             if (actor == null)
             {
                 return Json(new { success = false, message = "Actor not found!" });
@@ -184,8 +188,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             // لو حابب تمسح الصورة القديمة من الملفات كمان
              _fileUpload.DeleteFileLocally(actor.Img);
 
-            _repository.Delete(actor);
-            await _repository.CommitAsync();
+            _UnitOfWork.actorRepository.Delete(actor);
+            await _UnitOfWork.actorRepository.CommitAsync();
 
             return Json(new { success = true, message = "Actor deleted successfully!" });
         }
