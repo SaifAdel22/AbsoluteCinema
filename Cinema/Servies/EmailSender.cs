@@ -1,6 +1,11 @@
 ﻿using System.Net;
 using System.Net.Mail;
 
+using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Net;
+using System.Net.Mail;
+
+
 namespace AbsoluteCinema.Servies
 {
     public class EmailSender : IEmailSender
@@ -24,5 +29,7 @@ namespace AbsoluteCinema.Servies
                     IsBodyHtml = true
                 });
         }
+
+       
     }
 }

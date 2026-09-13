@@ -6,10 +6,10 @@ using AbsoluteCinema.Repositories.IRepositories;
 using AbsoluteCinema.Repositories.UnitOfWork;
 using AbsoluteCinema.Servies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddControllersWithViews();
@@ -24,13 +24,12 @@ builder.Services.AddScoped<IRepository<Actor>, Repository<Actor>>();
 builder.Services.AddScoped<IRepository<Category>, Repository<Category>>();
 builder.Services.AddScoped<IRepository<Movie>, Repository<Movie>>();
 builder.Services.AddScoped<IRepository<MovieSubImg>, Repository<MovieSubImg>>();
-
 builder.Services.AddScoped<IBulkRepository<MovieSubImg>, BulkRepository<MovieSubImg>>();
 builder.Services.AddScoped<IBulkRepository<MovieActor>, BulkRepository<MovieActor>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-
 builder.Services.AddScoped<IFileUpload, FileUpload>();
+
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -44,8 +43,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
           .AddEntityFrameworkStores<ApplicationDbContext>()
           .AddDefaultTokenProviders();
 
-builder.Services.AddTransient<IEmailSender, EmailSender>();
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -55,7 +52,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles(new StaticFileOptions
 {
     ServeUnknownFileTypes = true

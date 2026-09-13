@@ -1,4 +1,5 @@
 ﻿using AbsoluteCinema.Models;
+using AbsoluteCinema.Repositories.UnitOfWork;
 using AbsoluteCinema.Utility;
 using AbsoluteCinema.ViewModels;
 using Mapster;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AbsoluteCinema.Areas.Identity
+namespace AbsoluteCinema.Areas.Identity.Controllers
 {
     [Area("Identity")]
     public class AccountController : Controller
@@ -14,15 +15,19 @@ namespace AbsoluteCinema.Areas.Identity
         // Service layer => UserStore<ApplicationUser>
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailSender _emailSender;
+
+
 
         public AccountController(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IEmailSender emailSender)
+            IEmailSender emailSender,IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
@@ -178,15 +183,47 @@ namespace AbsoluteCinema.Areas.Identity
         }
 
         [HttpPost]
-        public IActionResult ResendConfirmation(ResendEmailConfirmationVM resendEmailConfirmationVM)
+        public async Task<IActionResult> ResendConfirmation(ResendEmailConfirmationVM model)
         {
             // 1. generate new token
             // 2. generate link
             // 3. generate new body
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (model.EmailOrUserName is null)
+            {
+                ModelState.AddModelError(nameof(model.EmailOrUserName), "Email Or UserName is required");
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.EmailOrUserName) ??
+                                    await _userManager.FindByNameAsync(model.EmailOrUserName);
+            if (user is null)
+            {
+                ModelState.AddModelError(string.Empty, "If your email is registered, a confirmation link has been sent.");
+                return View(model);
+            }
+            if(await _userManager.IsEmailConfirmedAsync(user))
+            {
+                ModelState.AddModelError(string.Empty, "Your email is already confirmed.");
+                return RedirectToAction(nameof(Login));
+            }
+
+
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var link = Url.Action(nameof(Confirm), ControllerConstants.ACCOUNT_CONTROLLER, new { area = AreaConstants.IDENTITY_AREA, user.Id, token }, Request.Scheme);
+            string body = $"<h1>Please confirm your account by clicking <b><a href='{link}'>here</a></b></h1>";
             // 4. send email
+
+
             // 5. redirect to login
 
-            return View();
+            await _emailSender.SendEmailAsync(user.Email!, "Confirm Your Account", body);
+
+            TempData[NotificationConstants.SUCCESS_NOTIFICATION] = "Confirmation email resent. Please check your inbox.";
+            return RedirectToAction(nameof(Login));
         }
 
         public IActionResult ExternalLogin()
