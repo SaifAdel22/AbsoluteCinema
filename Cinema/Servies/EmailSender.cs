@@ -16,7 +16,7 @@ namespace AbsoluteCinema.Servies
             {
                 EnableSsl = true,
                 UseDefaultCredentials = false,
-                Credentials = new NetworkCredential("mohamedashrafmahmoudgad@gmail.com", "exhq mbfw ppks olxm")
+                Credentials = new NetworkCredential("saif22adel52002@gmail.com", "jndk obup qngm fonw\r\n")
             };
 
             return client.SendMailAsync(

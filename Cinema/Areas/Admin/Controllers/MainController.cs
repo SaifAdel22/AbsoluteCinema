@@ -1,11 +1,14 @@
 ﻿using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories.UnitOfWork;
+using AbsoluteCinema.Utility;
 using AbsoluteCinema.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area(AreaConstants.ADMIN_AREA)]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public class MainController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;

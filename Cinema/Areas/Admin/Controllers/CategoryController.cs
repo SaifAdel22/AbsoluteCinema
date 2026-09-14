@@ -2,13 +2,15 @@
 using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories.IRepositories;
 using AbsoluteCinema.Repositories.UnitOfWork;
+using AbsoluteCinema.Utility;
 using AbsoluteCinema.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area(AreaConstants.ADMIN_AREA)]
     public class CategoryController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -74,12 +76,18 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return View(categoryVMs);
         }
 
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
         [HttpGet]
         public IActionResult Create()
         {
             var categoryVM = new CategoryVM();
             return View(categoryVM);
         }
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -100,6 +108,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
         [HttpGet]
         public IActionResult Update(int id)
         {
@@ -119,6 +130,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
             return View(categoryVM);
         }
+
+
+[Authorize(Roles = "Admin,SuperAdmin")]
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -147,6 +161,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             TempData["success"] = "Category updated successfully!";
             return RedirectToAction(nameof(Index));
         }
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id, CancellationToken ct = default)

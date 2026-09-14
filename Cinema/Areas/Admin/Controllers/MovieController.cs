@@ -1,16 +1,19 @@
-﻿using AbsoluteCinema.Models;
+﻿using AbsoluteCinema.Helper;
+using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories.IRepositories;
+using AbsoluteCinema.Repositories.UnitOfWork;
+using AbsoluteCinema.Utility;
 using AbsoluteCinema.ViewModels;
-using AbsoluteCinema.Helper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using AbsoluteCinema.Repositories.UnitOfWork;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area(AreaConstants.ADMIN_AREA)]
+
     public class MovieController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -93,6 +96,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return View(movieVM);
         }
 
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleStatus(int id)
@@ -107,6 +113,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+[Authorize(Roles = "Admin,SuperAdmin")]
+
+
         [HttpGet]
         public IActionResult Create()
         {
@@ -118,6 +127,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             };
             return View(model);
         }
+[Authorize(Roles = "Admin,SuperAdmin")]
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -184,6 +194,8 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
         }
 
         [HttpGet]
+[Authorize(Roles = "Admin,SuperAdmin")]
+
         public IActionResult Update(int id)
         {
             var movie = _unitOfWork.movieRepository.Get()
@@ -221,6 +233,7 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
             return View(model);
         }
+[Authorize(Roles = "Admin,SuperAdmin")]
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -284,6 +297,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
 
         [HttpGet, HttpPost]
         public async Task<IActionResult> Delete(int id)

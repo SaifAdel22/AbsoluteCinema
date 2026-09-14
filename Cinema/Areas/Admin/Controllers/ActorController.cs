@@ -5,10 +5,12 @@ using AbsoluteCinema.Helper;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 using AbsoluteCinema.Repositories.UnitOfWork;
+using Microsoft.AspNetCore.Authorization;
+using AbsoluteCinema.Utility;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area(AreaConstants.ADMIN_AREA)]
     public class ActorController : Controller
     {
        /* private readonly IRepository<Actor> __UnitOfWork.actorRepository;
@@ -104,12 +106,19 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return View(actorDetailsVM);
         }
 
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
         // Get: Create
         [HttpGet]
         public IActionResult Create()
         {
             return View(new ActorVM());
         }
+
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
 
         // Post: Create
         [HttpPost]
@@ -133,6 +142,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+[Authorize(Roles = "Admin,SuperAdmin")]
+
+
         // 4. Update (Get)
         [HttpGet]
         public IActionResult Update(int id)
@@ -149,6 +161,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
 
             return View(model);
         }
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
 
         // 4. Update (Post)
         [HttpPost]
@@ -175,6 +190,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+[Authorize(Roles = "Admin,SuperAdmin")]
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -185,7 +203,6 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
                 return Json(new { success = false, message = "Actor not found!" });
             }
 
-            // لو حابب تمسح الصورة القديمة من الملفات كمان
              _fileUpload.DeleteFileLocally(actor.Img);
 
             _UnitOfWork.actorRepository.Delete(actor);

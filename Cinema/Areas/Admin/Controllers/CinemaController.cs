@@ -2,12 +2,14 @@
 using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories.IRepositories;
 using AbsoluteCinema.Repositories.UnitOfWork;
+using AbsoluteCinema.Utility;
 using AbsoluteCinema.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AbsoluteCinema.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area(AreaConstants.ADMIN_AREA)]
     public class CinemaController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -70,12 +72,17 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return View(cinemaVM);
         }
 
+
+[Authorize(Roles = "Admin,SuperAdmin")]
         [HttpGet]
         public IActionResult Create()
         {
             var cinemaVM = new CinemaVM();
             return View(cinemaVM);
         }
+
+
+[Authorize(Roles = "Admin,SuperAdmin")]
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -123,6 +130,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+[Authorize(Roles = "Admin,SuperAdmin")]
+
+
         [HttpGet]
         public IActionResult Update(int id)
         {
@@ -139,6 +149,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             };
             return View(cinemaVM);
         }
+
+[Authorize(Roles = "Admin,SuperAdmin")]
+
 
         [HttpPost]
         public async Task<IActionResult> Update(int id, CinemaVM cinemaVM)
@@ -177,6 +190,9 @@ namespace AbsoluteCinema.Areas.Admin.Controllers
             TempData["success"] = "Cinema updated successfully!";
             return RedirectToAction(nameof(Index));
         }
+
+
+[Authorize(Roles = "Admin,SuperAdmin")]
 
         [HttpPost]
         public async Task<IActionResult> Delete(int id)

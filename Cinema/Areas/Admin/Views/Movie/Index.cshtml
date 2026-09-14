@@ -6,9 +6,12 @@
         <!-- Header الأزرق زي باقي الصفحات -->
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
             <h5 class="mb-0 text-white fw-bold">Movies Management</h5>
+              @if (User.IsInRole(RoleConstants.ADMIN) || User.IsInRole(RoleConstants.SUPER_ADMIN))
+              {
             <a asp-action="Create" class="btn btn-light btn-sm text-primary fw-bold">
                 <i class="fas fa-plus me-1"></i> Add New Movie
             </a>
+            }
         </div>
 
         <div class="card-body p-4">
@@ -32,7 +35,11 @@
                             <th class="py-3">Price</th>
                             <th class="py-3">Category</th>
                             <th class="py-3">Status</th>
+                                          @if (User.IsInRole(RoleConstants.ADMIN) || User.IsInRole(RoleConstants.SUPER_ADMIN))
+                                          {
+
                             <th class="py-3 text-end" style="min-width: 200px;">Actions</th>
+                                          }
                         </tr>
                     </thead>
                     <tbody>
@@ -60,6 +67,9 @@
                                     </span>
                                 </td>
                                 <!-- Status -->
+                                              @if (User.IsInRole(RoleConstants.ADMIN) || User.IsInRole(RoleConstants.SUPER_ADMIN))
+                                              {
+
                                 <td>
                                     <form asp-action="ToggleStatus" asp-route-id="@movie.Id" method="post" class="d-inline">
                                         @if (movie.Status)
@@ -76,13 +86,19 @@
                                         }
                                     </form>
                                 </td>
+                                }
                                 <!-- Actions (أزرار ملونة زى باقي الصفحات) -->
                                 <td class="text-end">
                                     <div class="btn-group" role="group">
                                         <a asp-action="Details" asp-route-id="@movie.Id" class="btn btn-info btn-sm text-white px-2 py-1">Details</a>
+                                        @if (User.IsInRole(RoleConstants.ADMIN) || User.IsInRole(RoleConstants.SUPER_ADMIN))
+                                        {
+
                                         <a asp-action="Update" asp-route-id="@movie.Id" class="btn btn-warning btn-sm text-white px-2 py-1 ms-1">Edit</a>
                                         <button type="button" class="btn btn-danger btn-sm px-2 py-1 ms-1" onclick="confirmDelete(@movie.Id)">Delete</button>
+                                        }
                                     </div>
+                                        
                                 </td>
                             </tr>
                         }

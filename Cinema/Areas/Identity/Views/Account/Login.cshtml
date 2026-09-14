@@ -5,6 +5,11 @@
 }
 
 <div class="container my-3">
+
+   
+    
+    <partial name="_Notification" />
+
     <h1>Login</h1>
 
     <h4>LoginVM</h4>
@@ -36,6 +41,9 @@
                 </div>
             </form>
         </div>
+    </div>
+    <div class="my-2">
+        <a asp-action="ForgetPassword">ForgetPassword?</a>
     </div>
     <div class="my-2">
         <a asp-action="ResendConfirmation">Resend email confirmation?</a>

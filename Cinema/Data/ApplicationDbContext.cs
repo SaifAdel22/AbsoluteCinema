@@ -17,6 +17,8 @@ namespace AbsoluteCinema.Data
         public DbSet<Movie> Movies { get; set; }
         public DbSet<MovieActor> MovieActors { get; set; }
         public DbSet<MovieSubImg> MovieSubImgs { get; set; }
+        public DbSet<ApplicationUserOTP> ApplicationUserOTPs { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

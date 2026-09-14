@@ -1,5 +1,6 @@
 using AbsoluteCinema.Data;
 using AbsoluteCinema.Helper;
+using AbsoluteCinema.Helpers;
 using AbsoluteCinema.Models;
 using AbsoluteCinema.Repositories;
 using AbsoluteCinema.Repositories.IRepositories;
@@ -26,10 +27,13 @@ builder.Services.AddScoped<IRepository<Movie>, Repository<Movie>>();
 builder.Services.AddScoped<IRepository<MovieSubImg>, Repository<MovieSubImg>>();
 builder.Services.AddScoped<IBulkRepository<MovieSubImg>, BulkRepository<MovieSubImg>>();
 builder.Services.AddScoped<IBulkRepository<MovieActor>, BulkRepository<MovieActor>>();
+builder.Services.AddScoped<IRepository<ApplicationUserOTP>, Repository<ApplicationUserOTP>>();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IFileUpload, FileUpload>();
 
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -42,6 +46,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 })
           .AddEntityFrameworkStores<ApplicationDbContext>()
           .AddDefaultTokenProviders();
+builder.Services.ConfigureApplicationCookie(option =>
+{
+    option.LoginPath = "/identity/account/login";
+    option.AccessDeniedPath = "/identity/account/AccessDenied";
+});
+
 
 var app = builder.Build();
 
@@ -68,6 +78,11 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+    dbInitializer.Initialize(); // Runs migrations and seeds data
+}
 app.Run();

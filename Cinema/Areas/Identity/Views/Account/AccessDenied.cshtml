@@ -1,0 +1,23 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="container my-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="text-danger display-4 font-weight-bold">Access Denied</h1>
+            <hr />
+            <h4 class="text-secondary my-3">You do not have permission to access this resource.</h4>
+            <p class="text-muted">Please contact the administrator if you believe this is a mistake.</p>
+
+            <div class="form-group my-4">
+                <a asp-action="Login" class="btn btn-primary">Back to Login</a>
+            </div>
+        </div>
+    </div>
+</div>
