@@ -47,20 +47,6 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
             if (!ModelState.IsValid)
                 return View(registerVM);
 
-            //ApplicationUser user = new()
-            //{
-            //    FirstName = registerVM.FirstName,
-            //    LastName = registerVM.LastName,
-            //    Email = registerVM.Email,
-            //    UserName = registerVM.UserName,
-            //    PasswordHash = registerVM.Password,
-            //    Address = registerVM.Address,
-            //};
-
-            //TypeAdapterConfig config = new();
-            //config.NewConfig<RegisterVM, ApplicationUser>()
-            //    .Map("FirstName", "FName")
-            //    .Map("LastName", "LName");
 
             ApplicationUser user = registerVM.Adapt<ApplicationUser>(/*config*/);
 
@@ -77,8 +63,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
             }
 
             {
-                // Send confirmation mail
-                // generate unique token
+                
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var link = Url.Action(nameof(Confirm), ControllerConstants.ACCOUNT_CONTROLLER, new { area = AreaConstants.IDENTITY_AREA, user.Id, token }, Request.Scheme);
                 string body = $"<h1>Please confirm your account by clicking <b><a href='{link}'>here</a></b></h1>";
@@ -104,7 +89,6 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
             else
             {
                 TempData[NotificationConstants.SUCCESS_NOTIFICATION] = "Confirm Account successfully, please login";
-                //await _signInManager.SignInAsync(user, false);
             }
 
             return RedirectToAction(nameof(Login));
@@ -122,7 +106,6 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
             if (!ModelState.IsValid)
                 return View(loginVM);
 
-            // 1. Check user name or email 
             var user = await _userManager.FindByEmailAsync(loginVM.EmailOrUserName) ??
                                     await _userManager.FindByNameAsync(loginVM.EmailOrUserName);
 
@@ -134,21 +117,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
                 return View(loginVM);
             }
 
-            #region Old way
-            //// 2. Check password
-            //bool result = await _userManager.CheckPasswordAsync(user, loginVM.Password);
-
-            //if (!result)
-            //{
-            //    ModelState.AddModelError(nameof(LoginVM.EmailOrUserName), "Invalid User Name or Email");
-            //    ModelState.AddModelError(nameof(LoginVM.Password), "Invalid Password");
-
-            //    return View(loginVM);
-            //}
-
-            //// 3. Login & Check remember me
-            //await _signInManager.SignInAsync(user, loginVM.Remember); 
-            #endregion
+            
 
             var signInResult = await _signInManager.PasswordSignInAsync(user, loginVM.Password, loginVM.Remember, lockoutOnFailure: true);
 
