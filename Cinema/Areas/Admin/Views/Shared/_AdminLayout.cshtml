@@ -74,14 +74,55 @@
               document.querySelector('.navbar-vertical').classList.add(`navbar-${navbarStyle}`);
             }
           </script>
+               
           <div class="d-flex align-items-center">
             <div class="toggle-icon-wrapper">
 
               <button class="btn navbar-toggler-humburger-icon navbar-vertical-toggle" data-bs-toggle="tooltip" data-bs-placement="left" title="Toggle Navigation"><span class="navbar-toggle-icon"><span class="toggle-line"></span></span></button>
 
             </div><a class="navbar-brand" href="~/index.html">
-              <div class="d-flex align-items-center py-3"><img class="me-2" src="~/assets/img/icons/spot-illustrations/falcon.png" alt="" width="40" /><span class="font-sans-serif">falcon</span>
-              </div>
+                    <nav class="navbar navbar-light navbar-glass navbar-top navbar-expand">
+                        <!-- أزرار التوجيه والـ Search لو موجودة -->
+
+                        <ul class="navbar-nav navbar-nav-right align-items-center ms-auto">
+                            @if (User.Identity != null && User.Identity.IsAuthenticated)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link px-0" id="navbarDropdownUser" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <div class="avatar avatar-xl">
+                                            <span class="fas fa-user-circle" style="font-size: 1.8rem;"></span>
+                                        </div>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-end py-0 shadow border" aria-labelledby="navbarDropdownUser">
+                                        <div class="card position-relative border-0">
+                                            <div class="card-body p-0">
+                                                <div class="text-center py-3">
+                                                    <h6 class="text-black font-weight-bold">@User.Identity.Name</h6>
+                                                </div>
+                                                <div class="bg-200 py-2">
+                                                    <a class="dropdown-item" asp-area="Identity" asp-controller="Profile" asp-action="Index">Account Settings</a>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer p-0">
+                                                <form class="form-inline" asp-area="Identity" asp-controller="Account" asp-action="Logout" method="post">
+                                                    <button type="submit" class="dropdown-item text-danger font-weight-bold py-2">Logout</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item px-2">
+                                    <a class="btn btn-outline-primary btn-sm" asp-area="Identity" asp-controller="Account" asp-action="Login">Login</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="btn btn-primary btn-sm" asp-area="Identity" asp-controller="Account" asp-action="Register">Register</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
             </a>
           </div>
             <div class="collapse navbar-collapse" id="navbarVerticalCollapse">
