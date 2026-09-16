@@ -142,7 +142,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
 
             TempData[NotificationConstants.SUCCESS_NOTIFICATION] = $"Welcome Back {user.FirstName} {user.LastName}";
 
-            return RedirectToAction("Index", "Home", new { area = "" });
+            return RedirectToAction(nameof(Index), ControllerConstants.HOME_CONTROLLER, new { area = AreaConstants.CUSTOMER_AREA });
         }
 
         /***
@@ -211,7 +211,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
         public IActionResult ForgetPassword()
         {
             if (User.Identity is not null && User.Identity.IsAuthenticated)
-                return RedirectToAction("Index", "Home", new { area = "" });
+                return RedirectToAction(nameof(Index), ControllerConstants.HOME_CONTROLLER, new { area = AreaConstants.CUSTOMER_AREA });
             return View();
         }
 
@@ -254,7 +254,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
         public IActionResult ValidateOTP()
         {
             if (User.Identity is not null && User.Identity.IsAuthenticated)
-                return RedirectToAction("Index", "Home", new { area = "" });
+                return RedirectToAction(nameof(Index), ControllerConstants.HOME_CONTROLLER, new { area = AreaConstants.CUSTOMER_AREA });
             if (TempData["RedirectToValidateOTP"] is null)
                 return NotFound();
 
