@@ -71,7 +71,8 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
                 await _emailSender.SendEmailAsync(user.Email!, "Confirm Your Account", body);
             }
 
-            TempData["SuccessMessage"] = "Account created successfully! Please login.";
+            TempData["Success"] = "Account created successfully! Please login.";
+
             return RedirectToAction(nameof(Login));
         }
 
@@ -88,7 +89,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
                 TempData[NotificationConstants.ERROR_NOTIFICATION] = String.Join(", ", result.Errors.Select(e => e.Description));
             else
             {
-                TempData[NotificationConstants.SUCCESS_NOTIFICATION] = "Confirm Account successfully, please login";
+                TempData["Success"] = "Confirm Account successfully, please login";
             }
 
             return RedirectToAction(nameof(Login));
@@ -140,7 +141,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
 
          
 
-            TempData[NotificationConstants.SUCCESS_NOTIFICATION] = $"Welcome Back {user.FirstName} {user.LastName}";
+            TempData["Success"] = $"Welcome Back {user.FirstName} {user.LastName}";
 
             return RedirectToAction(nameof(Index), ControllerConstants.HOME_CONTROLLER, new { area = AreaConstants.CUSTOMER_AREA });
         }
@@ -196,7 +197,8 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
 
             await _emailSender.SendEmailAsync(user.Email!, "Confirm Your Account", body);
 
-            TempData[NotificationConstants.SUCCESS_NOTIFICATION] = "Confirmation email resent. Please check your inbox.";
+            TempData["Success"] = "Confirmation email resent. Please check your inbox.";
+            
             return RedirectToAction(nameof(Login));
         }
 
@@ -286,7 +288,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
                 return RedirectToAction(nameof(ValidateOTP));
             }
 
-            TempData[NotificationConstants.SUCCESS_NOTIFICATION] = $"Valid OTP, you can now change your password";
+            TempData["Success"] = $"Valid OTP, you can now change your password";
             otpInDB.IsUsed = true;
             await _applicationUserOTPRepository.CommitAsync();
 
@@ -324,7 +326,7 @@ namespace AbsoluteCinema.Areas.Identity.Controllers
                 return View(newPasswordVM);
             }
 
-            TempData[NotificationConstants.SUCCESS_NOTIFICATION] = $"Reset Password successfully";
+            TempData["Success"] = $"Reset Password successfully";
             Response.Cookies.Delete("userId");
 
             return RedirectToAction(nameof(Login));
