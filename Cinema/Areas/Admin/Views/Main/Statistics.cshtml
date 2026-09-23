@@ -1,0 +1,91 @@
+﻿@model AbsoluteCinema.ViewModels.StatisticsVM
+
+<div class="container-fluid py-4">
+    <!-- كارد الترحيب المعدل بخلفية واضحة -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm bg-primary text-white border-0 rounded-3 p-4">
+                <h2 class="fw-bold mb-1 text-white">Welcome to Absolute Cinema Dashboard</h2>
+                <p class="mb-0 text-white-50">Here is a quick overview of your system's statistics and data.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- كروت الإحصائيات والعدادات المضبوطة -->
+    <div class="row g-3">
+        <!-- Movies Card -->
+        <div class="col-xxl-3 col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 border-start border-primary border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-uppercase fw-bold text-primary fs--1 mb-1">Total Movies</div>
+                            <div class="h2 fw-normal text-1000 mb-0">@Model.MoviesCount</div>
+                            <div class="mt-2">
+                                <span class="badge badge-soft-success fs--2">@Model.ActiveMoviesCount Active</span>
+                                <span class="badge badge-soft-danger fs--2 ms-1">@Model.InactiveMoviesCount Inactive</span>
+                            </div>
+                        </div>
+                        <div class="icon-item icon-item-lg bg-primary-subtle text-primary rounded-circle fs-3 p-3">
+                            <i class="fas fa-film"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actors Card -->
+        <div class="col-xxl-3 col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 border-start border-success border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-uppercase fw-bold text-success fs--1 mb-1">Total Actors</div>
+                            <div class="h2 fw-normal text-1000 mb-0">@Model.ActorsCount</div>
+                            <div class="mt-2 fs--1 text-muted">Registered Cast Members</div>
+                        </div>
+                        <div class="icon-item icon-item-lg bg-success-subtle text-success rounded-circle fs-3 p-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cinemas Card -->
+        <div class="col-xxl-3 col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 border-start border-warning border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-uppercase fw-bold text-warning fs--1 mb-1">Total Cinemas</div>
+                            <div class="h2 fw-normal text-1000 mb-0">@Model.CinemasCount</div>
+                            <div class="mt-2 fs--1 text-muted">Active Cinema Locations</div>
+                        </div>
+                        <div class="icon-item icon-item-lg bg-warning-subtle text-warning rounded-circle fs-3 p-3">
+                            <i class="fas fa-video"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Card -->
+        <div class="col-xxl-3 col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 border-start border-info border-4 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-uppercase fw-bold text-info fs--1 mb-1">Categories</div>
+                            <div class="h2 fw-normal text-1000 mb-0">@Model.CategoriesCount</div>
+                            <div class="mt-2 fs--1 text-muted">Movie Genres & Types</div>
+                        </div>
+                        <div class="icon-item icon-item-lg bg-info-subtle text-info rounded-circle fs-3 p-3">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

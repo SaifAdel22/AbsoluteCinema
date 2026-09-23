@@ -1,0 +1,108 @@
+﻿@model IEnumerable<AbsoluteCinema.ViewModels.AdminOrderVM>
+
+@{
+    ViewData["Title"] = "My Tickets & Orders";
+}
+
+<div class="container my-4">
+    <div class="card mb-3 shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-ticket-alt me-2"></i> My Tickets & Orders</h4>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive scrollbar">
+                <table class="table table-hover table-striped align-middle mb-0 overflow-hidden">
+                    <thead class="table-light text-secondary">
+                        <tr>
+                            <th class="py-3 ps-3">Order ID</th>
+                            <th class="py-3">Movie</th>
+                            <th class="py-3">Seats</th>
+                            <th class="py-3">Total Price</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Date</th>
+                            <th class="py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="list">
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td class="align-middle py-3 ps-3 fw-bold">#@order.Id</td>
+                                    <td class="align-middle py-3">
+                                        <div class="d-flex align-items-center">
+                                            @if (!string.IsNullOrEmpty(order.MoviePosterUrl))
+                                            {
+                                                <div class="avatar avatar-l me-2">
+                                                    <img class="rounded-circle" src="@order.MoviePosterUrl" alt="" style="width: 40px; height: 40px; object-fit: cover;" />
+                                                </div>
+                                            }
+                                            <span class="fw-semi-bold">@order.MovieTitle</span>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle py-3">
+                                        @if (order.SeatNumbers != null && order.SeatNumbers.Any())
+                                        {
+                                            <span class="badge bg-info text-dark">@string.Join(", ", order.SeatNumbers)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">No Seats</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle py-3 fw-bold text-success">$@order.TotalPrice</td>
+                                    <td class="align-middle py-3">
+                                        @if (order.Status == OrderStatus.Pending)
+                                        {
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        }
+                                        else if (order.Status == OrderStatus.Paid)
+                                        {
+                                            <span class="badge bg-success">Paid</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">@order.Status</span>
+                                        }
+                                    </td>
+                                    <td class="align-middle py-3 text-muted">
+                                        @(order.CreatedAt != default ? Convert.ToDateTime(order.CreatedAt).ToString("yyyy-MM-dd hh:mm tt") : "N/A")
+                                    </td>
+                                    <td class="align-middle py-3 text-center">
+                                        @if (order.Status == OrderStatus.Paid)
+                                        {
+                                            <form asp-action="Refund" asp-route-orderId="@order.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger btn-sm px-3 fw-bold" onclick="return confirm('Are you sure you want to request a refund for this ticket?');">
+                                                    <i class="fas fa-undo-alt me-1"></i> Refund
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">N/A</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="fas fa-ticket-alt fa-3x mb-3 text-secondary"></i>
+                                    <p class="mb-0">You haven't booked any tickets yet!</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

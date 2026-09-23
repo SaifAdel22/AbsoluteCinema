@@ -1,0 +1,59 @@
+﻿@if (TempData["success"] != null || TempData["error"] != null)
+{
+    <style>
+        /* تصحيح ألوان وإظهار نص الـ Toastr */
+        #toast-container > .toast-success {
+            background-color: #00d27a !important; /* لون أخضر جذاب */
+            color: #ffffff !important;
+            opacity: 1 !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+        #toast-container > .toast-error {
+            background-color: #e63757 !important; /* لون أحمر */
+            color: #ffffff !important;
+            opacity: 1 !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
+        #toast-container > .toast {
+            font-family: inherit !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            padding: 15px 15px 15px 50px !important;
+        }
+
+        .toast-message {
+            color: #ffffff !important;
+            display: block !important;
+        }
+    </style>
+}
+
+@if (TempData["success"] != null)
+{
+    <script type="text/javascript">
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "3000",
+            "extendedTimeOut": "1000"
+        };
+        toastr.success('@Html.Raw(TempData["success"])');
+    </script>
+}
+
+@if (TempData["error"] != null)
+{
+    <script type="text/javascript">
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "3000",
+            "extendedTimeOut": "1000"
+        };
+        toastr.error('@Html.Raw(TempData["error"])');
+    </script>
+}

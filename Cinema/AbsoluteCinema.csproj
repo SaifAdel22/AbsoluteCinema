@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>AbsoluteCinema</AssemblyName>
+    <RootNamespace>AbsoluteCinema</RootNamespace>
+    <UserSecretsId>c4def0c5-936e-422f-ab1c-bbf05a2d2c2f</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\images\movies\sub\6861bde2-75c2-463f-b38a-3fd3a0b6650d-09-09-2026.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\User\Controllers\" />
+    <Folder Include="wwwroot\imgs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mapster" Version="10.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Stripe.net" Version="52.4.2" />
+  </ItemGroup>
+
+</Project>

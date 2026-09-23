@@ -1,0 +1,73 @@
+﻿@model AbsoluteCinema.ViewModels.CategoryDetailsVM
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-white">Category Details: <span class="fw-bold">@Model.CategoryName</span></h5>
+        <a asp-action="Index" class="btn btn-sm btn-light text-primary">Back to List</a>
+    </div>
+    <div class="card-body">
+        <h6 class="mb-3 text-700">Movies under this Category (@Model.Movies.Count)</h6>
+
+        @if (!Model.Movies.Any())
+        {
+            <div class="alert alert-info border-0">No movies found in this category.</div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var movie in Model.Movies)
+                {
+                    <div class="col-md-4 col-lg-3">
+                        <div class="card h-100 border overflow-hidden">
+
+                            @{
+                                var fileName = movie.ExistingMainImg ?? "";
+                                string finalImgPath;
+
+                                if (string.IsNullOrWhiteSpace(fileName))
+                                {
+                                    finalImgPath = "/assets/img/generic/placeholder.png";
+                                }
+                                else if (fileName.StartsWith("/") || fileName.StartsWith("~"))
+                                {
+                                    finalImgPath = Url.Content(fileName);
+                                }
+                                else
+                                {
+                                    // المسار الدقيق المبني على هيكل المجلدات عندك
+                                    finalImgPath = Url.Content("~/images/movies/main/" + fileName);
+                                }
+                            }
+
+                            <!-- وعاء الصورة بأبعاد مظبوطة -->
+                            <div style="height: 260px; width: 100%; background-color: #f8f9fa;" class="position-relative">
+                                <img src="@finalImgPath"
+                                     class="card-img-top w-100 h-100"
+                                     alt="@movie.Title"
+                                     style="object-fit: cover; display: block;"
+                                     onerror="this.onerror=null; this.src='https://via.placeholder.com/300x400?text=No+Image';" />
+                            </div>
+
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <h6 class="card-title fw-bold text-truncate mb-1">@movie.Title</h6>
+                                    <p class="card-text text-muted small text-truncate mb-2">@movie.Description</p>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-success">$@movie.Price</span>
+                                        <small class="text-muted"><i class="far fa-clock me-1"></i>@movie.StartDate.ToString("dd MMM")</small>
+                                    </div>
+                                </div>
+
+                                <a asp-area="Admin" asp-controller="Movie" asp-action="Details" asp-route-id="@movie.Id" class="btn btn-sm btn-outline-primary w-100 mt-2">
+                                    <i class="fas fa-film me-1"></i> View Movie
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

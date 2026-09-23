@@ -1,0 +1,130 @@
+﻿@model IEnumerable<AbsoluteCinema.ViewModels.CategoryVM>
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 text-white">Categories Management</h5>
+        @if (User.IsInRole(RoleConstants.ADMIN) || User.IsInRole(RoleConstants.SUPER_ADMIN)){
+        <a asp-action="Create" class="btn btn-sm btn-light text-primary">
+            <i class="fas fa-plus me-1"></i> Add New Category
+        </a>}
+    </div>
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="query" value="@Context.Request.Query["query"]" class="form-control" placeholder="Search category by name..." />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Search
+                    </button>
+                    @if (!string.IsNullOrEmpty(Context.Request.Query["query"]))
+                    {
+                        <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+                    }
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category Name</th>
+                        @if (User.IsInRole(RoleConstants.ADMIN) || User.IsInRole(RoleConstants.SUPER_ADMIN))
+                        {
+                            <th class="text-end">Actions</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-4">No categories found.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@item.Name</td>
+                                <td class="text-end">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white me-1">Details</a>
+                                    @if (User.IsInRole(RoleConstants.ADMIN) || User.IsInRole(RoleConstants.SUPER_ADMIN))
+                                    {
+                                        <a asp-action="Update" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white me-1">Edit</a>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteCategory(@item.Id)">Delete</button>                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+       
+    </div>
+   
+</div>
+<!-- أزرار التنقل بين الصفحات -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <span class="text-muted">Page @ViewBag.CurrentPage of @ViewBag.TotalPages</span>
+    <nav>
+        <ul class="pagination mb-0">
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(ViewBag.CurrentPage - 1)" asp-route-query="@ViewBag.SearchQuery">Previous</a>
+            </li>
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@i" asp-route-query="@ViewBag.SearchQuery">@i</a>
+                </li>
+            }
+            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages || ViewBag.TotalPages == 0 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(ViewBag.CurrentPage + 1)" asp-route-query="@ViewBag.SearchQuery">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // غيرنا اسم الدالة هنا لـ deleteCategory عشان تطابق الزرار
+        function deleteCategory(id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Category/Delete/' + id, // عدلنا الرابط كمان عشان يروح للـ Category مش الـ Cinema
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            // الكنترولر بتاعك بيرجع Redirect فـ أول ما ينجح هنعمل ريلود للصفحة
+                            Swal.fire(
+                                'Deleted!',
+                                'Category deleted successfully!',
+                                'success'
+                            ).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            Swal.fire(
+                                'Error!',
+                                'Something went wrong while deleting. Details: ' + error,
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

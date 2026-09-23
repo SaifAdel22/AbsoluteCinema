@@ -1,0 +1,204 @@
+﻿@model IEnumerable<AbsoluteCinema.Models.Cart>
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+    decimal grandTotal = 0;
+    bool hasInactiveMovies = false;
+}
+
+<div class="container my-4">
+    <h2 class="fw-bold text-primary mb-4"><i class="fas fa-shopping-cart me-2"></i> Your Movie Cart</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            <!-- جدول عناصر السلة -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-secondary">
+                                    <tr>
+                                        <th class="ps-3" style="width: 15%;">Movie</th>
+                                        <th style="width: 35%;">Title</th>
+                                        <th style="width: 15%;">Price</th>
+                                        <th style="width: 20%;" class="text-center">Quantity</th>
+                                        <th style="width: 15%;">Total</th>
+                                        <th style="width: 10%;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        var priceToUse = item.CurrentPrice > 0 ? item.CurrentPrice : item.Movie.Price;
+                                        var itemTotal = item.CurrentPrice > 0 ? item.CurrentPrice : (item.Movie.Price * item.Count);
+                                        // افترضنا إن الـ Status من نوع bool (True = Active, False = Inactive)
+                                        // لو كانت String أو Enum ممكن تعدلها مثلاً: item.Movie.Status == "Active"
+                                        bool isMovieActive = item.Movie.Status;
+
+                                        if (isMovieActive)
+                                        {
+                                            grandTotal += itemTotal;
+                                        }
+                                        else
+                                        {
+                                            hasInactiveMovies = true;
+                                        }
+
+                                        var imgPath = string.IsNullOrEmpty(item.Movie.MainImg) ? "/assets/img/generic/placeholder.png" :
+                                                    (item.Movie.MainImg.StartsWith("images/") || item.Movie.MainImg.StartsWith("/")
+                                                        ? "/" + item.Movie.MainImg.TrimStart('/')
+                                                        : "/images/movies/main/" + item.Movie.MainImg);
+
+                                        <tr class="@(!isMovieActive ? "table-warning" : "")">
+                                            <td class="ps-3 py-3">
+                                                <img src="@imgPath" class="rounded shadow-sm" style="width: 60px; height: 75px; object-fit: cover;" onerror="this.src='/assets/img/generic/placeholder.png'" />
+                                            </td>
+                                            <td>
+                                                <h6 class="fw-bold text-dark mb-0">@item.Movie.Name</h6>
+                                                @if (!isMovieActive)
+                                                {
+                                                    <span class="badge bg-danger mt-1">Inactive / Not Available</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.CurrentPrice > 0 && item.CurrentPrice < item.Movie.Price)
+                                                {
+                                                    <span class="text-muted text-decoration-line-through small">$@item.Movie.Price</span>
+                                                    <span class="text-success fw-bold d-block">$@item.CurrentPrice</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">$@item.Movie.Price</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @if (isMovieActive)
+                                                {
+                                                    <div class="d-inline-flex align-items-center justify-content-center gap-1">
+                                                        @if (item.Count > 1)
+                                                        {
+                                                            <form asp-action="Decrement" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                                <button type="submit" class="btn btn-sm btn-outline-secondary px-2 py-0" title="Decrease">
+                                                                    <i class="fas fa-minus small"></i>
+                                                                </button>
+                                                            </form>
+                                                        }
+                                                        else
+                                                        {
+                                                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger px-2 py-0" title="Remove Item">
+                                                                    <i class="fas fa-trash small"></i>
+                                                                </button>
+                                                            </form>
+                                                        }
+
+                                                        <span class="mx-2 fw-bold text-dark">@item.Count</span>
+
+                                                        <form asp-action="Increment" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                            <button type="submit" class="btn btn-sm btn-outline-secondary px-2 py-0" title="Increase">
+                                                                <i class="fas fa-plus small"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (isMovieActive)
+                                                {
+                                                    <span class="fw-bold text-success">$@itemTotal</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted text-decoration-line-through">$@itemTotal</span>
+                                                }
+                                            </td>
+                                            <td class="text-end pe-3">
+                                                <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-link text-danger p-0" title="Delete">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ملخص الطلب وقسم البرومو كود -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="fw-bold text-secondary mb-3">Order Summary</h5>
+                        <hr />
+
+                        @if (hasInactiveMovies)
+                        {
+                            <div class="alert alert-warning py-2 small" role="alert">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Some movies in your cart are inactive and will be excluded from the total.
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="fw-bold fs-5">Total</span>
+                            <span class="fw-bold fs-5 text-primary">$@grandTotal</span>
+                        </div>
+
+                        <!-- فورم البرومو كود -->
+                        <form asp-action="Index" method="get" class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Have a Promo Code?</label>
+                            <div class="input-group">
+                                <input type="text" name="promo" class="form-control form-control-sm" placeholder="Enter code..." required />
+                                <button class="btn btn-outline-primary btn-sm" type="submit">Apply</button>
+                            </div>
+                        </form>
+
+                        <!-- زر إتمام الطلب -->
+                        <form asp-action="Pay" method="post">
+                            <button type="submit" class="btn btn-success w-100 py-2 shadow-sm fw-bold">
+                                Proceed to Checkout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <i class="fas fa-shopping-cart fa-4x text-muted opacity-50"></i>
+            </div>
+            <h4 class="text-muted">Your cart is empty!</h4>
+            <p class="text-muted small">Explore our movies list and add your favorite tickets.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary px-4 mt-2">
+                Browse Movies
+            </a>
+        </div>
+    }
+</div>

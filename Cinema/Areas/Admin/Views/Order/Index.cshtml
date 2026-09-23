@@ -1,0 +1,108 @@
+﻿@model IEnumerable<AbsoluteCinema.ViewModels.AdminOrderVM>
+
+@{
+    ViewData["Title"] = "Manage Bookings & Orders";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Bookings & Orders</h2>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" asp-action="Index" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select name="movieId" class="form-control" asp-items="@(new SelectList(ViewBag.Movies, "Id", "Name", ViewBag.SelectedMovieId))">
+                <option value="">-- All Movies --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#ID</th>
+                        <th>Poster</th>
+                        <th>Movie Title</th>
+                        <th>User</th>
+                        <th>Seats</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Booking Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>
+                                    @{
+                                        var mainImgPath = string.IsNullOrEmpty(item.MoviePosterUrl) ? "/assets/img/generic/placeholder.png" :
+                                                          (item.MoviePosterUrl.StartsWith("images/") || item.MoviePosterUrl.StartsWith("/")
+                                                              ? "/" + item.MoviePosterUrl.TrimStart('/')
+                                                              : "/images/movies/main/" + item.MoviePosterUrl);
+                                    }
+                                    <img src="@mainImgPath" alt="Poster" style="width: 40px; height: 50px; object-fit: cover;" class="rounded" />
+                                </td>
+                                <td><strong>@item.MovieTitle</strong></td>
+                                <td>
+                                    @item.UserName <br />
+                                    <small class="text-muted">@item.UserEmail</small>
+                                </td>
+                                <td>
+                                    @if (item.SeatNumbers != null && item.SeatNumbers.Any())
+                                    {
+                                        <span class="badge bg-secondary">@string.Join(", ", item.SeatNumbers)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No Seats</span>
+                                    }
+                                </td>
+                                <td>$@item.TotalPrice</td>
+                                <td>
+                                    @switch (item.Status)
+                                    {
+                                        case OrderStatus.Pending:
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                            break;
+                                        case OrderStatus.Paid:
+                                            <span class="badge bg-success">Paid</span>
+                                            break;
+                                        case OrderStatus.Cancelled:
+                                            <span class="badge bg-danger">Canceled</span>
+                                            break;
+                                        case OrderStatus.Refunded:
+                                            <span class="badge bg-info text-dark">Refunded</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>@item.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">
+                                        <i class="fas fa-eye"></i> Details
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">No bookings available at the moment.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

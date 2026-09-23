@@ -1,0 +1,98 @@
+﻿@model AbsoluteCinema.ViewModels.AdminOrderVM
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Movie & User Info Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                
+                <div class="card-body">
+                    <h4 class="card-title">@Model.MovieTitle</h4>
+                    <p class="card-text text-muted"><strong>User:</strong> @Model.UserName (@Model.UserEmail)</p>
+                    <p class="card-text"><strong>Total Price:</strong> <span class="text-success fw-bold">$@Model.TotalPrice</span></p>
+                    <p class="card-text"><strong>Booking Date:</strong> @Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seats, Status & Actions -->
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4">
+                <h3 class="mb-3">Ticket & Seat Details</h3>
+                <hr />
+
+                <div class="mb-3">
+                    <h5 class="text-secondary">Current Status:</h5>
+                    <div>
+                        @switch (Model.Status)
+                        {
+                            case OrderStatus.Pending:
+                                <span class="badge bg-warning text-dark fs-5">Pending</span>
+                                break;
+                            case OrderStatus.Paid:
+                                <span class="badge bg-success fs-5">Paid</span>
+                                break;
+                            case OrderStatus.Cancelled:
+                                <span class="badge bg-danger fs-5">Canceled</span>
+                                break;
+                            case OrderStatus.Refunded:
+                                <span class="badge bg-info text-dark fs-5">Refunded</span>
+                                break;
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="text-secondary">Reserved Seats:</h5>
+                    @if (Model.SeatNumbers != null && Model.SeatNumbers.Any())
+                    {
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var seat in Model.SeatNumbers)
+                            {
+                                <span class="badge bg-dark p-2 fs-6">Seat: @seat</span>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No specific seats recorded for this order.</p>
+                    }
+                </div>
+
+                <hr />
+
+                <!-- Admin Action Buttons -->
+                <h5 class="text-secondary mb-3">Change Status (Admin Actions):</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <form asp-action="ChangeStatus" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="status" value="@OrderStatus.Cancelled" />
+                        <button type="submit" class="btn btn-outline-danger">Canceled</button>
+                    </form>
+
+                    <form asp-action="ChangeStatus" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="status" value="@OrderStatus.Refunded" />
+                        <button type="submit" class="btn btn-outline-info">Refunded</button>
+                    </form>
+
+                    <form asp-action="ChangeStatus" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="status" value="@OrderStatus.Paid" />
+                        <button type="submit" class="btn btn-outline-success">Paid</button>
+                    </form>
+                </div>
+
+                <div class="mt-4">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

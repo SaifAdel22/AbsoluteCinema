@@ -1,0 +1,38 @@
+﻿@model AbsoluteCinema.ViewModels.ValidateOTPVM
+
+@{
+    ViewData["Title"] = "Validate OTP";
+}
+
+<div class="container my-3">
+    <h1>Validate OTP</h1>
+
+    <h4>ValidateOTPVM</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-12">
+            <form asp-action="ValidateOTP" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="OTP" class="control-label"></label>
+                    <input asp-for="OTP" class="form-control" />
+                    <span asp-validation-for="OTP" class="text-danger"></span>
+                </div>
+
+                <div class="form-group my-3">
+                    <input type="submit" value="Verify OTP" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="my-3">
+        <a asp-action="Login">Back to Login</a>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_Notification" />
+}
