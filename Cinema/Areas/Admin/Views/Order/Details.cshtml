@@ -74,7 +74,7 @@
                         <button type="submit" class="btn btn-outline-danger">Canceled</button>
                     </form>
 
-                    <form asp-action="ChangeStatus" method="post">
+                    <form asp-action="refund" method="post" asp-area="Customer">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <input type="hidden" name="status" value="@OrderStatus.Refunded" />
                         <button type="submit" class="btn btn-outline-info">Refunded</button>
